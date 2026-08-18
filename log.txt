@@ -1,0 +1,23 @@
+==================================================
+TECHLOGISTICS S.A.
+REGISTRO DE AVANCE DEL PROYECTO
+==================================================
+
+SEMANA 1
+Fecha: 18/08/2026
+
+[Inicialización del proyecto]
+
+- Instalación y verificación de .NET 10 SDK.
+- Instalación y configuración de Visual Studio Code.
+- Instalación y verificación de Git.
+- Creación de la solución Blazor Web App.
+- Configuración inicial del proyecto TechLogistics.
+- Verificación de compilación y ejecución.
+- Aplicación ejecutada correctamente en entorno local.
+- Inicialización del repositorio Git local.
+
+Estado:
+Proyecto base funcionando correctamente.
+
+==================================================
