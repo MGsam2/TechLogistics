@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="../TechLogistics.Client/TechLogistics.Client.csproj" />
+  <Project Path="TechLogistics.csproj" />
+</Solution>
