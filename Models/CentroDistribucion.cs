@@ -9,4 +9,5 @@ public class CentroDistribucion
     public int Inventario { get; set; }
 
     public bool EnLinea { get; set; }
+    public DateTime UltimaActualizacion { get; set; }
 }

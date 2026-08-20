@@ -1,6 +1,9 @@
 @page "/dashboard"
 @rendermode InteractiveServer
 @using TechLogistics.Models
+@using TechLogistics.Services
+@inject CentroDistribucionService CentroService
+
 
 <PageTitle>TechLogistics | Dashboard</PageTitle>
 
@@ -58,46 +61,25 @@
 
 @code {
 
-    private DateTime ultimaActualizacion = DateTime.Now;
+    private DateTime ultimaActualizacion = DateTime.UtcNow;
 
-    private List<CentroDistribucion> centros = new()
+    private List<CentroDistribucion> centros = new();
+
+    protected override async Task OnInitializedAsync()
     {
-        new CentroDistribucion
-        {
-            Id = 1,
-            Nombre = "Guatemala",
-            Inventario = 1245,
-            EnLinea = true
-        },
-
-        new CentroDistribucion
-        {
-            Id = 2,
-            Nombre = "San Salvador",
-            Inventario = 892,
-            EnLinea = true
-        },
-
-        new CentroDistribucion
-        {
-            Id = 3,
-            Nombre = "Tegucigalpa",
-            Inventario = 431,
-            EnLinea = false
-        },
-
-        new CentroDistribucion
-        {
-            Id = 4,
-            Nombre = "San José",
-            Inventario = 1102,
-            EnLinea = true
-        }
-    };
-
-    private void Actualizar()
-    {
-        ultimaActualizacion = DateTime.Now;
+        await CargarCentros();
     }
 
+    private async Task Actualizar()
+    {
+        await CentroService.ActualizarInventarioAsync();
+        await CargarCentros();
+
+        ultimaActualizacion = DateTime.UtcNow;
+    }
+
+    private async Task CargarCentros()
+    {
+        centros = await CentroService.ObtenerCentrosAsync();
+    }
 }
