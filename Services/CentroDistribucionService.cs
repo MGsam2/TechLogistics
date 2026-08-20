@@ -1,50 +1,41 @@
-using Microsoft.EntityFrameworkCore;
-using TechLogistics.Data;
 using TechLogistics.Models;
 
 namespace TechLogistics.Services;
 
 public class CentroDistribucionService
 {
-    private readonly TechLogisticsDbContext context;
+    private readonly InventarioService inventarioService;
+    private readonly InventarioNotifier notifier;
 
-    public CentroDistribucionService(TechLogisticsDbContext context)
+    public CentroDistribucionService(
+        InventarioService inventarioService,
+        InventarioNotifier notifier)
     {
-        this.context = context;
+        this.inventarioService = inventarioService;
+        this.notifier = notifier;
     }
 
     public async Task<List<CentroDistribucion>> ObtenerCentrosAsync()
     {
-        return await context.CentrosDistribucion
-            .AsNoTracking()
-            .OrderBy(c => c.Id)
-            .ToListAsync();
+        return await inventarioService.ObtenerCentrosAsync();
     }
 
     public async Task ActualizarInventarioAsync()
     {
-        var centros = await context.CentrosDistribucion.ToListAsync();
+        var centrosAntes =
+            await inventarioService.ObtenerCentrosAsync();
 
-        var random = new Random();
+        await inventarioService.ActualizarInventarioAsync(
+            -50,
+            101);
 
-        foreach (var centro in centros)
+        var centrosDespues =
+            await inventarioService.ObtenerCentrosAsync();
+
+        foreach (var centro in centrosDespues)
         {
-            // Simulación de cambios de inventario
-            centro.Inventario += random.Next(-50, 101);
-
-            // Evitar inventarios negativos
-            if (centro.Inventario < 0)
-            {
-                centro.Inventario = 0;
-            }
-
-            // Simulación del estado del centro
-            centro.EnLinea = random.Next(0, 10) > 1;
-
-            // PostgreSQL/Npgsql trabaja con UTC
-            centro.UltimaActualizacion = DateTime.UtcNow;
+            await notifier.NotificarActualizacion(
+                new InventarioActualizadoEvent(centro));
         }
-
-        await context.SaveChangesAsync();
     }
 }

@@ -21,3 +21,23 @@ Estado:
 Proyecto base funcionando correctamente.
 
 ==================================================
+SEMANA 2
+
+- Implementación de modelo CentroDistribucion.
+- Integración de PostgreSQL mediante Entity Framework Core.
+- Implementación de DbContext.
+- Creación de migración inicial.
+- Implementación del servicio de inventario.
+- Implementación del simulador de actualización automática.
+- Implementación de Dashboard interactivo mediante InteractiveServer.
+- Implementación de actualización automática del inventario.
+- Implementación de notificaciones en tiempo real.
+- Implementación de componentes UI reutilizables.
+- Implementación del componente CentroCard.
+- Implementación de arquitectura de servicios desacoplados.
+- Preparación de cliente Blazor WebAssembly.
+
+Estado:
+Arquitectura de monitoreo en tiempo real implementada y funcionando.
+
+==================================================

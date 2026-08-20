@@ -1,0 +1,150 @@
+@using TechLogistics.Models
+
+<div class="col-md-3">
+
+    <div class="distribution-card">
+
+        <!-- Encabezado -->
+        <div class="distribution-header">
+
+            <div>
+
+                <h3>
+                    @Centro.Nombre
+                </h3>
+
+                <span class="location">
+                    Centro de distribución
+                </span>
+
+            </div>
+
+            <!-- Estado operativo -->
+            @if (Centro.EnLinea)
+            {
+                <span class="status online">
+                    🟢 En línea
+                </span>
+            }
+            else
+            {
+                <span class="status warning">
+                    🟡 Advertencia
+                </span>
+            }
+
+        </div>
+
+
+        <!-- Inventario -->
+        <div class="inventory">
+
+            <span>
+                Inventario
+            </span>
+
+            <strong>
+                @Centro.Inventario.ToString("N0")
+            </strong>
+
+            <span>
+                unidades
+            </span>
+
+        </div>
+
+
+        <!-- Estado del inventario -->
+        <div class="mt-2">
+
+            @if (Centro.Inventario <= 200)
+            {
+                <span class="badge bg-danger">
+                    🔴 Inventario crítico
+                </span>
+            }
+            else if (Centro.Inventario <= 500)
+            {
+                <span class="badge bg-warning text-dark">
+                    🟠 Inventario bajo
+                </span>
+            }
+            else
+            {
+                <span class="badge bg-success">
+                    🟢 Inventario normal
+                </span>
+            }
+
+        </div>
+
+
+        <!-- Barra de inventario -->
+        <div class="capacity">
+
+            <div class="capacity-header">
+
+                <span>
+                    Nivel de inventario
+                </span>
+
+                <strong>
+                    @PorcentajeInventario%
+                </strong>
+
+            </div>
+
+            <div class="progress">
+
+                <div class="progress-bar"
+                     style="width:@PorcentajeInventario%">
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Pie -->
+        <div class="distribution-footer">
+
+            <span>
+                Última actualización
+            </span>
+
+            <span>
+                @Centro.UltimaActualizacion.ToLocalTime().ToString("HH:mm:ss")
+            </span>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+@code {
+
+    [Parameter]
+    [EditorRequired]
+    public CentroDistribucion Centro { get; set; } = default!;
+
+
+    private int PorcentajeInventario
+    {
+        get
+        {
+            const int capacidadReferencia = 1000;
+
+            var porcentaje =
+                (int)((double)Centro.Inventario
+                / capacidadReferencia * 100);
+
+            return Math.Clamp(
+                porcentaje,
+                0,
+                100);
+        }
+    }
+
+}

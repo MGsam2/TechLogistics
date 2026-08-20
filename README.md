@@ -18,6 +18,24 @@ El sistema contempla:
 - Autenticación y autorización basada en roles.
 - Pruebas automatizadas con xUnit y bUnit.
 
+## Implementado actualmente
+
+Dashboard en tiempo real.
+PostgreSQL.
+EF Core.
+Simulación de inventario.
+Notificaciones.
+Componentes reutilizables.
+
+## Planificado
+
+State Container y persistencia local.
+API REST.
+gRPC.
+JWT.
+Roles.
+xUnit/bUnit.
+
 ## Tecnologías
 
 - .NET 10

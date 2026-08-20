@@ -7,6 +7,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddScoped<CentroDistribucionService>();
+builder.Services.AddHostedService<InventarioSimulatorService>();
+builder.Services.AddScoped<InventarioService>();
+builder.Services.AddSingleton<InventarioNotifier>();
+builder.Services.AddScoped<InventarioState>();
+
+
 
 builder.Services.AddDbContext<TechLogisticsDbContext>(options =>
     options.UseNpgsql(
