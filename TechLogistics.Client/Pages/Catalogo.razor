@@ -1,0 +1,943 @@
+@page "/catalogo"
+@attribute [Authorize(Roles = "GerenteBodega")]
+@using Microsoft.AspNetCore.Authorization
+@using TechLogistics.Client.Models
+@using TechLogistics.Client.Services
+
+@inject CatalogoApiService CatalogoService
+
+<PageTitle>TechLogistics | Catálogo</PageTitle>
+
+<div class="container-fluid py-4">
+    
+<!-- ENCABEZADO -->
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+
+    <div>
+        <div class="text-uppercase text-primary fw-semibold small mb-1">
+            Administración
+        </div>
+
+        <h1 class="h3 fw-bold mb-1">
+            Catálogo de productos
+        </h1>
+
+        <p class="text-muted mb-0">
+            Administra los productos disponibles en TechLogistics.
+        </p>
+    </div>
+
+    <div class="d-flex gap-2 mt-3 mt-md-0">
+
+        <button class="btn btn-primary"
+                @onclick="NuevoProducto">
+
+            <span class="me-1">＋</span>
+            Nuevo producto
+
+        </button>
+
+        <button class="btn btn-outline-secondary"
+                @onclick="CargarProductos"
+                disabled="@cargando">
+
+            <span class="me-1">↻</span>
+            Actualizar
+
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- MENSAJE DE ÉXITO -->
+@if (!string.IsNullOrWhiteSpace(mensaje))
+{
+    <div class="alert alert-success alert-dismissible fade show"
+         role="alert">
+
+        <strong>✓ Correcto:</strong>
+        @mensaje
+
+        <button type="button"
+                class="btn-close"
+                aria-label="Cerrar"
+                @onclick="LimpiarMensaje">
+        </button>
+
+    </div>
+}
+
+
+<!-- MENSAJE DE ERROR -->
+@if (!string.IsNullOrWhiteSpace(error))
+{
+    <div class="alert alert-danger alert-dismissible fade show"
+         role="alert">
+
+        <strong>⚠ Error:</strong>
+        @error
+
+        <button type="button"
+                class="btn-close"
+                aria-label="Cerrar"
+                @onclick="LimpiarMensaje">
+        </button>
+
+    </div>
+}
+
+
+<!-- FORMULARIO -->
+@if (mostrarFormulario)
+{
+    <div class="card border-0 shadow-sm mb-4">
+
+        <div class="card-header bg-white border-bottom py-3">
+
+            <div class="d-flex justify-content-between align-items-center">
+
+                <div>
+
+                    <h2 class="h5 fw-bold mb-1">
+                        @(editando
+                            ? "Actualizar producto"
+                            : "Nuevo producto")
+                    </h2>
+
+                    <p class="text-muted small mb-0">
+                        @(editando
+                            ? "Modifica la información del producto."
+                            : "Registra un nuevo producto en el catálogo.")
+                    </p>
+
+                </div>
+
+                <button class="btn-close"
+                        type="button"
+                        aria-label="Cerrar"
+                        @onclick="CancelarFormulario">
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <div class="card-body">
+
+            <div class="row g-3">
+
+                <!-- NOMBRE -->
+                <div class="col-12 col-md-6">
+
+                    <label class="form-label fw-semibold">
+                        Nombre del producto
+                        <span class="text-danger">*</span>
+                    </label>
+
+                    <input class="form-control"
+                           type="text"
+                           @bind="productoFormulario.Nombre"
+                           placeholder="Ej. Laptop Lenovo ThinkPad T14" />
+
+                </div>
+
+
+                <!-- CATEGORÍA -->
+                <div class="col-12 col-md-6">
+
+                    <label class="form-label fw-semibold">
+                        Categoría
+                        <span class="text-danger">*</span>
+                    </label>
+
+                    <input class="form-control"
+                           type="text"
+                           @bind="productoFormulario.Categoria"
+                           placeholder="Ej. Tecnología" />
+
+                </div>
+
+
+                <!-- STOCK MÍNIMO -->
+                <div class="col-12 col-md-6">
+
+                    <label class="form-label fw-semibold">
+                        Stock mínimo
+                        <span class="text-danger">*</span>
+                    </label>
+
+                    <input class="form-control"
+                           type="number"
+                           min="0"
+                           @bind="productoFormulario.StockMinimo" />
+
+                    <div class="form-text">
+                        Cantidad mínima antes de generar una alerta.
+                    </div>
+
+                </div>
+
+
+                <!-- ESTADO -->
+                <div class="col-12 col-md-6">
+
+                    <label class="form-label fw-semibold">
+                        Estado
+                    </label>
+
+                    <div class="form-check mt-2">
+
+                        <input class="form-check-input"
+                               type="checkbox"
+                               id="productoActivo"
+                               @bind="productoFormulario.Activo" />
+
+                        <label class="form-check-label"
+                               for="productoActivo">
+
+                            Producto activo
+
+                        </label>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ACCIONES -->
+            <div class="d-flex gap-2 mt-4">
+
+                <button class="btn btn-primary"
+                        @onclick="GuardarProducto"
+                        disabled="@guardando">
+
+                    @if (guardando)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2"
+                              role="status">
+                        </span>
+
+                        <span>Guardando...</span>
+                    }
+                    else
+                    {
+                        <span class="me-1">✓</span>
+
+                        <span>
+                            @(editando
+                                ? "Guardar cambios"
+                                : "Crear producto")
+                        </span>
+                    }
+
+                </button>
+
+
+                <button class="btn btn-outline-secondary"
+                        @onclick="CancelarFormulario"
+                        disabled="@guardando">
+
+                    Cancelar
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+}
+
+
+<!-- RESUMEN -->
+@if (!cargando)
+{
+    <div class="row g-3 mb-4">
+
+        <!-- TOTAL -->
+        <div class="col-12 col-md-4">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="text-muted small">
+                        Productos registrados
+                    </div>
+
+                    <div class="fs-3 fw-bold mt-1">
+                        @productos.Count
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ACTIVOS -->
+        <div class="col-12 col-md-4">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="text-muted small">
+                        Productos activos
+                    </div>
+
+                    <div class="fs-3 fw-bold text-success mt-1">
+                        @productos.Count(p => p.Activo)
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- INACTIVOS -->
+        <div class="col-12 col-md-4">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="text-muted small">
+                        Productos inactivos
+                    </div>
+
+                    <div class="fs-3 fw-bold text-secondary mt-1">
+                        @productos.Count(p => !p.Activo)
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+}
+
+
+<!-- CARGANDO -->
+@if (cargando)
+{
+    <div class="card border-0 shadow-sm">
+
+        <div class="card-body text-center py-5">
+
+            <div class="spinner-border text-primary mb-3"
+                 role="status">
+            </div>
+
+            <div class="fw-semibold">
+                Cargando productos...
+            </div>
+
+            <div class="text-muted small mt-1">
+                Consultando información del catálogo.
+            </div>
+
+        </div>
+
+    </div>
+}
+
+
+<!-- SIN PRODUCTOS -->
+else if (productos.Count == 0)
+{
+    <div class="card border-0 shadow-sm">
+
+        <div class="card-body text-center py-5">
+
+            <div class="fs-1 mb-3">
+                📦
+            </div>
+
+            <h2 class="h5 fw-bold">
+                No hay productos registrados
+            </h2>
+
+            <p class="text-muted mb-4">
+                Crea el primer producto para comenzar a administrar
+                el catálogo.
+            </p>
+
+            <button class="btn btn-primary"
+                    @onclick="NuevoProducto">
+
+                ＋ Nuevo producto
+
+            </button>
+
+        </div>
+
+    </div>
+}
+
+
+<!-- TABLA -->
+else
+{
+    <div class="card border-0 shadow-sm">
+
+        <div class="card-header bg-white border-bottom py-3">
+
+            <div class="d-flex justify-content-between align-items-center">
+
+                <div>
+
+                    <h2 class="h5 fw-bold mb-1">
+                        Productos
+                    </h2>
+
+                    <span class="text-muted small">
+                        Catálogo actual
+                    </span>
+
+                </div>
+
+                <span class="badge text-bg-light border">
+                    @productos.Count productos
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="table-responsive">
+
+            <table class="table table-hover align-middle mb-0">
+
+                <thead class="table-light">
+
+                    <tr>
+
+                        <th>ID</th>
+
+                        <th>Producto</th>
+
+                        <th>Categoría</th>
+
+                        <th>Stock mínimo</th>
+
+                        <th>Estado</th>
+
+                        <th class="text-end">
+                            Acciones
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    @foreach (var producto in productos)
+                    {
+                        <tr>
+
+                            <!-- ID -->
+                            <td>
+
+                                <span class="text-muted">
+                                    #@producto.Id
+                                </span>
+
+                            </td>
+
+
+                            <!-- PRODUCTO -->
+                            <td>
+
+                                <div class="d-flex align-items-center">
+
+                                    <div class="bg-primary bg-opacity-10
+                                                text-primary rounded-circle
+                                                d-flex align-items-center
+                                                justify-content-center
+                                                me-3"
+                                         style="width:40px;height:40px;">
+
+                                        <strong>
+                                            @ObtenerIniciales(producto.Nombre)
+                                        </strong>
+
+                                    </div>
+
+                                    <div>
+
+                                        <div class="fw-semibold">
+                                            @producto.Nombre
+                                        </div>
+
+                                        <div class="text-muted small">
+                                            ID #@producto.Id
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </td>
+
+
+                            <!-- CATEGORÍA -->
+                            <td>
+
+                                <span class="badge text-bg-light border">
+                                    @producto.Categoria
+                                </span>
+
+                            </td>
+
+
+                            <!-- STOCK -->
+                            <td>
+
+                                <span class="fw-semibold">
+                                    @producto.StockMinimo
+                                </span>
+
+                            </td>
+
+
+                            <!-- ESTADO -->
+                            <td>
+
+                                @if (producto.Activo)
+                                {
+                                    <span class="badge text-bg-success">
+                                        Activo
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge text-bg-secondary">
+                                        Inactivo
+                                    </span>
+                                }
+
+                            </td>
+
+
+                            <!-- ACCIONES -->
+                            <td>
+
+                                <div class="d-flex justify-content-end gap-2">
+
+                                    <button class="btn btn-sm btn-outline-primary"
+                                            title="Editar producto"
+                                            @onclick="() => EditarProducto(producto)">
+
+                                        ✎
+
+                                    </button>
+
+                                    <button class="btn btn-sm btn-outline-danger"
+                                            title="Eliminar producto"
+                                            @onclick="() => SolicitarEliminar(producto)">
+
+                                        ×
+
+                                    </button>
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+}
+
+
+<!-- MODAL DE ELIMINACIÓN -->
+@if (mostrarConfirmacion)
+{
+    <div class="modal fade show d-block"
+         tabindex="-1"
+         style="background-color: rgba(0,0,0,.5);">
+
+        <div class="modal-dialog modal-dialog-centered">
+
+            <div class="modal-content border-0 shadow">
+
+                <div class="modal-header">
+
+                    <h2 class="modal-title h5 fw-bold">
+                        Eliminar producto
+                    </h2>
+
+                    <button type="button"
+                            class="btn-close"
+                            aria-label="Cerrar"
+                            @onclick="CancelarEliminar">
+                    </button>
+
+                </div>
+
+
+                <div class="modal-body">
+
+                    <div class="text-center mb-3">
+
+                        <div class="rounded-circle
+                                    bg-danger bg-opacity-10
+                                    text-danger
+                                    d-inline-flex
+                                    align-items-center
+                                    justify-content-center"
+                             style="width:56px;height:56px;">
+
+                            <span class="fs-4">
+                                !
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <p class="text-center mb-3">
+                        ¿Estás seguro de que deseas eliminar este producto?
+                    </p>
+
+
+                    @if (productoAEliminar is not null)
+                    {
+                        <div class="bg-light rounded p-3 mb-3">
+
+                            <div class="fw-semibold">
+                                @productoAEliminar.Nombre
+                            </div>
+
+                            <div class="text-muted small mt-1">
+
+                                @productoAEliminar.Categoria
+
+                                ·
+
+                                Stock mínimo:
+                                @productoAEliminar.StockMinimo
+
+                            </div>
+
+                        </div>
+                    }
+
+
+                    <div class="alert alert-warning mb-0">
+
+                        <strong>Advertencia:</strong>
+                        esta acción no se puede deshacer.
+
+                    </div>
+
+                </div>
+
+
+                <div class="modal-footer">
+
+                    <button class="btn btn-outline-secondary"
+                            @onclick="CancelarEliminar">
+
+                        Cancelar
+
+                    </button>
+
+                    <button class="btn btn-danger"
+                            @onclick="ConfirmarEliminar">
+
+                        Eliminar producto
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+}
+
+</div>
+
+@code {
+
+private List<Producto> productos = new();
+
+private Producto productoFormulario = new();
+
+private Producto? productoAEliminar;
+
+private bool cargando = true;
+
+private bool guardando;
+
+private bool mostrarFormulario;
+
+private bool editando;
+
+private bool mostrarConfirmacion;
+
+private string? mensaje;
+
+private string? error;
+
+
+protected override async Task OnInitializedAsync()
+{
+    await CargarProductos();
+}
+
+
+private async Task CargarProductos()
+{
+    try
+    {
+        cargando = true;
+        error = null;
+
+        productos = await CatalogoService.ObtenerProductosAsync();
+    }
+    catch (Exception ex)
+    {
+        error = $"No fue posible cargar los productos: {ex.Message}";
+    }
+    finally
+    {
+        cargando = false;
+    }
+}
+
+
+private void NuevoProducto()
+{
+    LimpiarMensaje();
+
+    productoFormulario = new Producto
+    {
+        Nombre = string.Empty,
+        Categoria = string.Empty,
+        StockMinimo = 0,
+        Activo = true
+    };
+
+    editando = false;
+    mostrarFormulario = true;
+}
+
+
+private void EditarProducto(Producto producto)
+{
+    LimpiarMensaje();
+
+    productoFormulario = new Producto
+    {
+        Id = producto.Id,
+        Nombre = producto.Nombre,
+        Categoria = producto.Categoria,
+        StockMinimo = producto.StockMinimo,
+        Activo = producto.Activo
+    };
+
+    editando = true;
+    mostrarFormulario = true;
+}
+
+
+private async Task GuardarProducto()
+{
+    try
+    {
+        guardando = true;
+        LimpiarMensaje();
+
+
+        if (string.IsNullOrWhiteSpace(productoFormulario.Nombre))
+        {
+            error = "El nombre del producto es obligatorio.";
+            return;
+        }
+
+
+        if (string.IsNullOrWhiteSpace(productoFormulario.Categoria))
+        {
+            error = "La categoría es obligatoria.";
+            return;
+        }
+
+
+        if (productoFormulario.StockMinimo < 0)
+        {
+            error = "El stock mínimo no puede ser negativo.";
+            return;
+        }
+
+
+        if (editando)
+        {
+            var actualizado =
+                await CatalogoService.ActualizarAsync(productoFormulario.Id,productoFormulario);
+
+            if (actualizado)
+            {
+                mensaje = "Producto actualizado correctamente.";
+
+                mostrarFormulario = false;
+
+                await CargarProductos();
+            }
+            else
+            {
+                error = "No fue posible actualizar el producto.";
+            }
+        }
+        else
+        {
+            var creado =
+                await CatalogoService.CrearAsync(
+                    productoFormulario);
+
+            if (creado is not null)
+            {
+                mensaje = "Producto creado correctamente.";
+
+                mostrarFormulario = false;
+
+                await CargarProductos();
+            }
+            else
+            {
+                error = "No fue posible crear el producto.";
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        error = $"Ocurrió un error: {ex.Message}";
+    }
+    finally
+    {
+        guardando = false;
+    }
+}
+
+
+private void CancelarFormulario()
+{
+    mostrarFormulario = false;
+
+    productoFormulario = new();
+
+    LimpiarMensaje();
+}
+
+
+private void SolicitarEliminar(Producto producto)
+{
+    LimpiarMensaje();
+
+    productoAEliminar = producto;
+
+    mostrarConfirmacion = true;
+}
+
+
+private void CancelarEliminar()
+{
+    mostrarConfirmacion = false;
+
+    productoAEliminar = null;
+}
+
+
+private async Task ConfirmarEliminar()
+{
+    if (productoAEliminar is null)
+    {
+        return;
+    }
+
+    try
+    {
+        var id = productoAEliminar.Id;
+
+        var eliminado =
+            await CatalogoService.EliminarAsync(id);
+
+        if (eliminado)
+        {
+            mensaje = "Producto eliminado correctamente.";
+
+            mostrarConfirmacion = false;
+
+            productoAEliminar = null;
+
+            await CargarProductos();
+        }
+        else
+        {
+            error = "No fue posible eliminar el producto.";
+        }
+    }
+    catch (Exception ex)
+    {
+        error = $"Error al eliminar el producto: {ex.Message}";
+    }
+}
+
+
+private void LimpiarMensaje()
+{
+    mensaje = null;
+    error = null;
+}
+
+
+private string ObtenerIniciales(string nombre)
+{
+    if (string.IsNullOrWhiteSpace(nombre))
+    {
+        return "PR";
+    }
+
+    var palabras = nombre.Trim().Split(
+            ' ',
+            StringSplitOptions.RemoveEmptyEntries);
+
+    if (palabras.Length == 1)
+    {
+        return palabras[0]
+            .Substring(
+                0,
+                Math.Min(2, palabras[0].Length))
+            .ToUpper();
+    }
+
+    return $"{palabras[0][0]}{palabras[1][0]}"
+        .ToUpper();
+}
+
+}

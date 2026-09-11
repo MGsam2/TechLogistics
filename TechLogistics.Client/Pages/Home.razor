@@ -1,0 +1,435 @@
+﻿@page "/"
+
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+
+@attribute [Authorize]
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>TechLogistics | Inicio</PageTitle>
+
+<div class="admin-home">
+
+    <!-- ENCABEZADO -->
+
+    <div class="home-header">
+
+        <div>
+
+            <h1>Bienvenido a TechLogistics</h1>
+
+            <p>
+                Panel de administración y gestión logística
+            </p>
+
+        </div>
+
+        <div class="home-status">
+
+            <span class="status-dot"></span>
+
+            Sistema operativo
+
+        </div>
+
+    </div>
+
+
+    <!-- RESUMEN -->
+
+    <div class="summary-grid">
+
+        <div class="summary-card">
+
+            <div class="summary-icon">
+                📦
+            </div>
+
+            <div>
+
+                <span class="summary-label">
+                    Catálogo
+                </span>
+
+                <strong>
+                    Productos
+                </strong>
+
+                <small>
+                    Gestión de productos
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <div class="summary-icon">
+                🏢
+            </div>
+
+            <div>
+
+                <span class="summary-label">
+                    Distribución
+                </span>
+
+                <strong>
+                    Centros
+                </strong>
+
+                <small>
+                    Centros de distribución
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <div class="summary-icon">
+                📊
+            </div>
+
+            <div>
+
+                <span class="summary-label">
+                    Operaciones
+                </span>
+
+                <strong>
+                    Inventario
+                </strong>
+
+                <small>
+                    Control de existencias
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <div class="summary-icon">
+                📈
+            </div>
+
+            <div>
+
+                <span class="summary-label">
+                    Análisis
+                </span>
+
+                <strong>
+                    Dashboard
+                </strong>
+
+                <small>
+                    Indicadores del sistema
+                </small>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ACCESOS RÁPIDOS -->
+
+    <div class="home-section">
+
+        <div class="section-header">
+
+            <div>
+
+                <h2>Accesos rápidos</h2>
+
+                <p>
+                    Administra los principales módulos de TechLogistics.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="quick-actions">
+
+
+            <!-- DASHBOARD -->
+
+            <AuthorizeView Roles="GerenteBodega">
+
+                <Authorized>
+
+                    <a href="/dashboard"
+                       class="quick-card">
+
+                        <div class="quick-icon">
+                            📊
+                        </div>
+
+                        <div>
+
+                            <h3>Dashboard</h3>
+
+                            <p>
+                                Consulta los principales indicadores
+                                y el estado general de la operación.
+                            </p>
+
+                        </div>
+
+                        <span class="quick-arrow">
+                            →
+                        </span>
+
+                    </a>
+
+                </Authorized>
+
+
+                <NotAuthorized>
+
+                    <div class="quick-card quick-card-disabled"
+                         aria-disabled="true">
+
+                        <div class="quick-icon">
+                            📊
+                        </div>
+
+                        <div>
+
+                            <h3>Dashboard</h3>
+
+                            <p>
+                                Consulta los principales indicadores
+                                y el estado general de la operación.
+                            </p>
+
+                        </div>
+
+                        <span class="quick-arrow">
+                            →
+                        </span>
+
+                    </div>
+
+                </NotAuthorized>
+
+            </AuthorizeView>
+
+
+            <!-- CATÁLOGO -->
+
+            <AuthorizeView Roles="GerenteBodega">
+
+                <Authorized>
+
+                    <a href="/catalogo"
+                       class="quick-card">
+
+                        <div class="quick-icon">
+                            📦
+                        </div>
+
+                        <div>
+
+                            <h3>Catálogo</h3>
+
+                            <p>
+                                Administra los productos registrados
+                                en el sistema.
+                            </p>
+
+                        </div>
+
+                        <span class="quick-arrow">
+                            →
+                        </span>
+
+                    </a>
+
+                </Authorized>
+
+
+                <NotAuthorized>
+
+                    <div class="quick-card quick-card-disabled"
+                         aria-disabled="true">
+
+                        <div class="quick-icon">
+                            📦
+                        </div>
+
+                        <div>
+
+                            <h3>Catálogo</h3>
+
+                            <p>
+                                Administra los productos registrados
+                                en el sistema.
+                            </p>
+
+                        </div>
+
+                        <span class="quick-arrow">
+                            →
+                        </span>
+
+                    </div>
+
+                </NotAuthorized>
+
+            </AuthorizeView>
+
+
+            <!-- CENTROS DE DISTRIBUCIÓN -->
+
+            <AuthorizeView Roles="GerenteBodega">
+
+                <Authorized>
+
+                    <a href="/centros"
+                       class="quick-card">
+
+                        <div class="quick-icon">
+                            🏢
+                        </div>
+
+                        <div>
+
+                            <h3>Centros de distribución</h3>
+
+                            <p>
+                                Consulta y administra los centros
+                                logísticos de la empresa.
+                            </p>
+
+                        </div>
+
+                        <span class="quick-arrow">
+                            →
+                        </span>
+
+                    </a>
+
+                </Authorized>
+
+
+                <NotAuthorized>
+
+                    <div class="quick-card quick-card-disabled"
+                         aria-disabled="true">
+
+                        <div class="quick-icon">
+                            🏢
+                        </div>
+
+                        <div>
+
+                            <h3>Centros de distribución</h3>
+
+                            <p>
+                                Consulta y administra los centros
+                                logísticos de la empresa.
+                            </p>
+
+                        </div>
+
+                        <span class="quick-arrow">
+                            →
+                        </span>
+
+                    </div>
+
+                </NotAuthorized>
+
+            </AuthorizeView>
+
+
+            <!-- INVENTARIO -->
+
+            <a href="/inventario"
+               class="quick-card">
+
+                <div class="quick-icon">
+                    📋
+                </div>
+
+                <div>
+
+                    <h3>Inventario</h3>
+
+                    <p>
+                        Controla las existencias y movimientos
+                        de inventario.
+                    </p>
+
+                </div>
+
+                <span class="quick-arrow">
+                    →
+                </span>
+
+            </a>
+
+
+        </div>
+
+    </div>
+
+
+    <!-- INFORMACIÓN DEL SISTEMA -->
+
+    <div class="system-info">
+
+        <div>
+
+            <span class="info-label">
+                SISTEMA
+            </span>
+
+            <strong>
+                TechLogistics
+            </strong>
+
+        </div>
+
+
+        <div>
+
+            <span class="info-label">
+                PLATAFORMA
+            </span>
+
+            <strong>
+                ASP.NET Core + Blazor
+            </strong>
+
+        </div>
+
+
+        <div>
+
+            <span class="info-label">
+                ESTADO
+            </span>
+
+            <strong class="online">
+                ● Operativo
+            </strong>
+
+        </div>
+
+    </div>
+
+</div>

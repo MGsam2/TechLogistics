@@ -1,0 +1,49 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using TechLogistics.Client.Layout
+@using TechLogistics.Client.Services
+@using TechLogistics.Client.Pages
+
+<CascadingAuthenticationState>
+
+    <Router AppAssembly="@typeof(App).Assembly"
+            NotFoundPage="typeof(Pages.NotFound)">
+
+        <Found Context="routeData">
+
+            <AuthorizeRouteView
+                RouteData="@routeData"
+                DefaultLayout="@typeof(MainLayout)">
+
+                <NotAuthorized>
+                    <RedirectToLogin />
+                </NotAuthorized>
+
+            </AuthorizeRouteView>
+
+            <FocusOnNavigate
+                RouteData="@routeData"
+                Selector="h1" />
+
+        </Found>
+
+    </Router>
+
+</CascadingAuthenticationState>
+
+@code {
+
+    [Inject]
+    private JwtAuthenticationStateProvider AuthProvider
+        { get; set; } = default!;
+
+    protected override async Task OnAfterRenderAsync(
+        bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        await AuthProvider.InicializarAsync();
+    }
+}

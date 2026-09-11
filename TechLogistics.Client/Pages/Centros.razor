@@ -1,0 +1,814 @@
+@page "/centros"
+@attribute [Authorize(Roles = "GerenteBodega")]
+@using Microsoft.AspNetCore.Authorization
+@using TechLogistics.Client.Models
+@using TechLogistics.Client.Services
+
+@inject CentroDistribucionApiService CentroService
+
+<PageTitle>TechLogistics | Centros de distribución</PageTitle>
+
+<div class="centros-page">
+
+    <!-- ENCABEZADO -->
+    <div class="centros-header">
+
+        <div>
+            <span class="centros-eyebrow">
+                ADMINISTRACIÓN
+            </span>
+
+            <h1>Centros de distribución</h1>
+
+            <p>
+                Supervisa y administra los centros que forman parte de la operación logística.
+            </p>
+        </div>
+
+        <div class="centros-header-actions">
+
+            <button class="centros-button centros-button-primary"
+                    @onclick="NuevoCentro"
+                    disabled="@mostrarFormulario">
+
+                <span>＋</span>
+                Nuevo centro
+
+            </button>
+
+            <button class="centros-button centros-button-light"
+                    @onclick="CargarCentros"
+                    disabled="@cargando">
+
+                <span>↻</span>
+                Actualizar
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- MENSAJES -->
+    @if (!string.IsNullOrWhiteSpace(mensaje))
+    {
+        <div class="centros-alert centros-alert-success">
+            <span>✓</span>
+            <span>@mensaje</span>
+
+            <button @onclick="LimpiarMensajes">
+                ×
+            </button>
+        </div>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(error))
+    {
+        <div class="centros-alert centros-alert-error">
+            <span>!</span>
+            <span>@error</span>
+
+            <button @onclick="LimpiarMensajes">
+                ×
+            </button>
+        </div>
+    }
+
+
+    <!-- RESUMEN -->
+    @if (!cargando)
+    {
+        <div class="centros-summary">
+
+            <div class="summary-item">
+                <span class="summary-label">
+                    Centros registrados
+                </span>
+
+                <strong class="summary-number">
+                    @centros.Count
+                </strong>
+            </div>
+
+            <div class="summary-item">
+                <span class="summary-label">
+                    En línea
+                </span>
+
+                <strong class="summary-number summary-success">
+                    @centros.Count(c => c.EnLinea)
+                </strong>
+            </div>
+
+            <div class="summary-item">
+                <span class="summary-label">
+                    Fuera de línea
+                </span>
+
+                <strong class="summary-number summary-danger">
+                    @centros.Count(c => !c.EnLinea)
+                </strong>
+            </div>
+
+            <div class="summary-item">
+                <span class="summary-label">
+                    Inventario total
+                </span>
+
+                <strong class="summary-number">
+                    @centros.Sum(c => c.Inventario).ToString("N0")
+                </strong>
+            </div>
+
+        </div>
+    }
+
+
+    <!-- FORMULARIO DESPLEGABLE -->
+    @if (mostrarFormulario)
+    {
+        <div class="centros-form-card">
+
+            <div class="centros-form-header">
+
+                <div>
+                    <span class="form-eyebrow">
+                        @(editando ? "EDICIÓN" : "REGISTRO")
+                    </span>
+
+                    <h2>
+                        @(editando
+                            ? "Editar centro de distribución"
+                            : "Nuevo centro de distribución")
+                    </h2>
+
+                    <p>
+                        @(editando
+                            ? "Actualiza la información del centro seleccionado."
+                            : "Ingresa la información del nuevo centro.")
+                    </p>
+                </div>
+
+                <button class="centros-close-button"
+                        @onclick="CancelarFormulario"
+                        disabled="@guardando"
+                        title="Cerrar">
+
+                    ×
+
+                </button>
+
+            </div>
+
+
+            <div class="centros-form-body">
+
+                <div class="centros-form-grid">
+
+                    <!-- NOMBRE -->
+                    <div class="centros-field">
+
+                        <label>
+                            Nombre del centro
+                            <span>*</span>
+                        </label>
+
+                        <input class="form-control"
+                               type="text"
+                               @bind="formulario.Nombre"
+                               placeholder="Ej. Centro Guatemala"
+                               disabled="@guardando" />
+
+                    </div>
+
+
+                    <!-- INVENTARIO -->
+                    <div class="centros-field">
+
+                        <label>
+                            Inventario inicial
+                            <span>*</span>
+                        </label>
+
+                        <input class="form-control"
+                               type="number"
+                               min="0"
+                               @bind="formulario.Inventario"
+                               disabled="@guardando" />
+
+                        <small>
+                            Cantidad inicial de unidades disponibles.
+                        </small>
+
+                    </div>
+
+
+                    <!-- ESTADO -->
+                    <div class="centros-field">
+
+                        <label>
+                            Estado operativo
+                        </label>
+
+                        <select class="form-select"
+                                @bind="formulario.EnLinea"
+                                disabled="@guardando">
+
+                            <option value="true">
+                                En línea
+                            </option>
+
+                            <option value="false">
+                                Fuera de línea
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ACCIONES -->
+                <div class="centros-form-actions">
+
+                    <button class="centros-button centros-button-primary"
+                            @onclick="Guardar"
+                            disabled="@guardando">
+
+                        @(guardando
+                            ? "Guardando..."
+                            : editando
+                                ? "✓ Guardar cambios"
+                                : "✓ Crear centro")
+
+                    </button>
+
+                    <button class="centros-button centros-button-light"
+                            @onclick="CancelarFormulario"
+                            disabled="@guardando">
+
+                        Cancelar
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+    }
+
+
+    <!-- CARGANDO -->
+    @if (cargando)
+    {
+        <div class="centros-loading">
+
+            <div class="spinner-border"></div>
+
+            <div>
+                <strong>Cargando centros</strong>
+                <span>Consultando información del sistema...</span>
+            </div>
+
+        </div>
+    }
+
+
+    <!-- SIN CENTROS -->
+    else if (centros.Count == 0)
+    {
+        <div class="centros-empty">
+
+            <div class="empty-icon">
+                ◫
+            </div>
+
+            <h2>No hay centros registrados</h2>
+
+            <p>
+                Actualmente no existen centros de distribución registrados.
+            </p>
+
+            <button class="centros-button centros-button-primary"
+                    @onclick="NuevoCentro">
+
+                ＋ Registrar primer centro
+
+            </button>
+
+        </div>
+    }
+
+
+    <!-- TABLA -->
+    else
+    {
+        <div class="centros-table-card">
+
+            <div class="centros-table-header">
+
+                <div>
+                    <span class="table-eyebrow">
+                        OPERACIÓN
+                    </span>
+
+                    <h2>Centros registrados</h2>
+
+                    <p>
+                        Estado e inventario actual de cada centro.
+                    </p>
+                </div>
+
+                <span class="centros-count">
+                    @centros.Count
+                    @(centros.Count == 1 ? "centro" : "centros")
+                </span>
+
+            </div>
+
+
+            <div class="centros-table-wrapper">
+
+                <table class="centros-table">
+
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>CENTRO</th>
+                            <th>INVENTARIO</th>
+                            <th>ESTADO</th>
+                            <th>ÚLTIMA ACTUALIZACIÓN</th>
+                            <th>ACCIONES</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var centro in centros)
+                        {
+                            <tr>
+
+                                <!-- ID -->
+                                <td>
+                                    <span class="centro-id">
+                                        #@centro.Id
+                                    </span>
+                                </td>
+
+
+                                <!-- CENTRO -->
+                                <td>
+
+                                    <div class="centro-name">
+
+                                        <div class="centro-avatar">
+                                            @ObtenerIniciales(centro.Nombre)
+                                        </div>
+
+                                        <div>
+                                            <strong>
+                                                @centro.Nombre
+                                            </strong>
+
+                                            <span>
+                                                Centro de distribución
+                                            </span>
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- INVENTARIO -->
+                                <td>
+
+                                    <div class="inventory-value">
+
+                                        <strong>
+                                            @centro.Inventario.ToString("N0")
+                                        </strong>
+
+                                        <span>
+                                            unidades
+                                        </span>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- ESTADO -->
+                                <td>
+
+                                    @if (centro.EnLinea)
+                                    {
+                                        <span class="centro-status centro-status-online">
+                                            <span class="status-dot"></span>
+                                            En línea
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="centro-status centro-status-offline">
+                                            <span class="status-dot"></span>
+                                            Fuera de línea
+                                        </span>
+                                    }
+
+                                </td>
+
+
+                                <!-- ACTUALIZACIÓN -->
+                                <td>
+
+                                    <div class="update-date">
+
+                                        <strong>
+                                            @centro.UltimaActualizacion.ToLocalTime().ToString("dd/MM/yyyy")
+                                        </strong>
+
+                                        <span>
+                                            @centro.UltimaActualizacion.ToLocalTime().ToString("HH:mm")
+                                        </span>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- ACCIONES -->
+                                <td>
+
+                                    <div class="centro-actions">
+
+                                        <button class="centro-action centro-action-edit"
+                                                title="Editar centro"
+                                                @onclick="() => Editar(centro)">
+
+                                            ✎
+
+                                        </button>
+
+                                        <button class="centro-action centro-action-delete"
+                                                title="Eliminar centro"
+                                                @onclick="() => SolicitarEliminar(centro)">
+
+                                            ×
+
+                                        </button>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+    }
+
+
+    <!-- MODAL DE ELIMINACIÓN -->
+    @if (mostrarConfirmacion)
+    {
+        <div class="centros-modal-overlay">
+
+            <div class="centros-delete-modal">
+
+                <div class="delete-modal-icon">
+                    !
+                </div>
+
+                <span class="delete-eyebrow">
+                    CONFIRMACIÓN
+                </span>
+
+                <h2>
+                    Eliminar centro
+                </h2>
+
+                <p>
+                    ¿Estás seguro de que deseas eliminar este centro de distribución?
+                </p>
+
+
+                @if (centroAEliminar is not null)
+                {
+                    <div class="delete-center-preview">
+
+                        <div class="centro-avatar">
+                            @ObtenerIniciales(centroAEliminar.Nombre)
+                        </div>
+
+                        <div>
+                            <strong>
+                                @centroAEliminar.Nombre
+                            </strong>
+
+                            <span>
+                                Inventario:
+                                @centroAEliminar.Inventario.ToString("N0")
+                                unidades
+                            </span>
+                        </div>
+
+                    </div>
+                }
+
+
+                <div class="delete-warning">
+                    Esta acción no se puede deshacer.
+                </div>
+
+
+                <div class="delete-modal-actions">
+
+                    <button class="centros-button centros-button-light"
+                            @onclick="CancelarEliminar"
+                            disabled="@eliminando">
+
+                        Cancelar
+
+                    </button>
+
+                    <button class="centros-button centros-button-danger"
+                            @onclick="ConfirmarEliminar"
+                            disabled="@eliminando">
+
+                        @(eliminando
+                            ? "Eliminando..."
+                            : "Eliminar centro")
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+    }
+
+</div>
+
+
+@code {
+
+    private List<CentroDistribucion> centros = new();
+
+    private CentroDistribucion formulario = new();
+
+    private CentroDistribucion? centroAEliminar;
+
+    private bool cargando = true;
+    private bool guardando;
+    private bool eliminando;
+    private bool mostrarFormulario;
+    private bool editando;
+    private bool mostrarConfirmacion;
+
+    private string? mensaje;
+    private string? error;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarCentros();
+    }
+
+
+    private async Task CargarCentros()
+    {
+        try
+        {
+            cargando = true;
+            error = null;
+
+            centros = await CentroService.ObtenerTodosAsync();
+        }
+        catch (Exception ex)
+        {
+            error =
+                $"No fue posible cargar los centros: {ex.Message}";
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+
+    private void NuevoCentro()
+    {
+        LimpiarMensajes();
+
+        formulario = new CentroDistribucion
+        {
+            Nombre = string.Empty,
+            Inventario = 0,
+            EnLinea = true
+        };
+
+        editando = false;
+        mostrarFormulario = true;
+    }
+
+
+    private void Editar(CentroDistribucion centro)
+    {
+        LimpiarMensajes();
+
+        formulario = new CentroDistribucion
+        {
+            Id = centro.Id,
+            Nombre = centro.Nombre,
+            Inventario = centro.Inventario,
+            EnLinea = centro.EnLinea,
+            UltimaActualizacion = centro.UltimaActualizacion
+        };
+
+        editando = true;
+        mostrarFormulario = true;
+    }
+
+
+    private async Task Guardar()
+    {
+        LimpiarMensajes();
+
+        if (string.IsNullOrWhiteSpace(formulario.Nombre))
+        {
+            error = "El nombre del centro es obligatorio.";
+            return;
+        }
+
+        if (formulario.Inventario < 0)
+        {
+            error = "El inventario no puede ser negativo.";
+            return;
+        }
+
+        try
+        {
+            guardando = true;
+
+            if (editando)
+            {
+                var actualizado =
+                    await CentroService.ActualizarAsync(
+                        formulario.Id,
+                        formulario);
+
+                if (!actualizado)
+                {
+                    error =
+                        "No fue posible actualizar el centro.";
+                    return;
+                }
+
+                mensaje =
+                    "Centro actualizado correctamente.";
+            }
+            else
+            {
+                var creado =
+                    await CentroService.CrearAsync(
+                        formulario);
+
+                if (creado is null)
+                {
+                    error =
+                        "No fue posible crear el centro.";
+                    return;
+                }
+
+                mensaje =
+                    "Centro creado correctamente.";
+            }
+
+            mostrarFormulario = false;
+
+            await CargarCentros();
+        }
+        catch (Exception ex)
+        {
+            error =
+                $"Ocurrió un error: {ex.Message}";
+        }
+        finally
+        {
+            guardando = false;
+        }
+    }
+
+
+    private void CancelarFormulario()
+    {
+        mostrarFormulario = false;
+        formulario = new();
+
+        LimpiarMensajes();
+    }
+
+
+    private void SolicitarEliminar(CentroDistribucion centro)
+    {
+        LimpiarMensajes();
+
+        centroAEliminar = centro;
+        mostrarConfirmacion = true;
+    }
+
+
+    private void CancelarEliminar()
+    {
+        mostrarConfirmacion = false;
+        centroAEliminar = null;
+    }
+
+
+    private async Task ConfirmarEliminar()
+    {
+        if (centroAEliminar is null)
+        {
+            return;
+        }
+
+        try
+        {
+            eliminando = true;
+
+            var id = centroAEliminar.Id;
+
+            var eliminado =
+                await CentroService.EliminarAsync(id);
+
+            if (!eliminado)
+            {
+                error =
+                    "No fue posible eliminar el centro.";
+                return;
+            }
+
+            mensaje =
+                "Centro eliminado correctamente.";
+
+            mostrarConfirmacion = false;
+            centroAEliminar = null;
+
+            await CargarCentros();
+        }
+        catch (Exception ex)
+        {
+            error =
+                $"Error al eliminar el centro: {ex.Message}";
+        }
+        finally
+        {
+            eliminando = false;
+        }
+    }
+
+
+    private void LimpiarMensajes()
+    {
+        mensaje = null;
+        error = null;
+    }
+
+
+    private string ObtenerIniciales(string? nombre)
+    {
+        if (string.IsNullOrWhiteSpace(nombre))
+        {
+            return "CD";
+        }
+
+        var palabras = nombre
+            .Trim()
+            .Split(
+                ' ',
+                StringSplitOptions.RemoveEmptyEntries);
+
+        if (palabras.Length == 1)
+        {
+            return palabras[0]
+                .Substring(
+                    0,
+                    Math.Min(2, palabras[0].Length))
+                .ToUpper();
+        }
+
+        return $"{palabras[0][0]}{palabras[1][0]}"
+            .ToUpper();
+    }
+}

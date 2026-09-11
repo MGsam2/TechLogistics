@@ -1,0 +1,177 @@
+@page "/telemetria-test"
+
+@using TechLogistics.Client.Services
+@using TechLogistics.Client.Components
+@using TechLogistics.Grpc
+
+@inject InventarioStreamingService StreamingService
+@inject InventarioClientState InventarioState
+
+@implements IDisposable
+
+<PageTitle>Prueba de Telemetría</PageTitle>
+
+<div class="container-fluid p-4">
+
+    <h1>Prueba de Telemetría gRPC</h1>
+
+    <p>
+        Esta página comprueba el flujo de actualizaciones
+        en tiempo real mediante gRPC-Web.
+    </p>
+
+    <!-- Indicador de conexión -->
+
+    <div class="mb-4">
+
+        <IndicadorConexion
+            Conectado="@StreamingActivo"
+            MostrarBoton="true"
+            OnCambioConexion="CambiarConexion" />
+
+    </div>
+
+    <!-- Resumen -->
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-3">
+
+            <ResumenInventario
+                Titulo="Total de centros"
+                Valor="@InventarioState.TotalCentros"
+                Icono="🏢" />
+
+        </div>
+
+        <div class="col-md-3">
+
+            <ResumenInventario
+                Titulo="Centros en línea"
+                Valor="@InventarioState.CentrosEnLinea"
+                Icono="✓"
+                Descripcion="Centros operativos" />
+
+        </div>
+
+        <div class="col-md-3">
+
+            <ResumenInventario
+                Titulo="Advertencias"
+                Valor="@InventarioState.CentrosEnAdvertencia"
+                Icono="⚠"
+                Descripcion="Centros que requieren atención" />
+
+        </div>
+
+        <div class="col-md-3">
+
+            <ResumenInventario
+                Titulo="Inventario total"
+                Valor="@InventarioState.InventarioTotal"
+                Icono="📦" />
+
+        </div>
+
+    </div>
+
+    <!-- Centros -->
+
+    <h3 class="mb-3">
+        Centros de distribución
+    </h3>
+
+    @if (InventarioState.Centros.Count == 0)
+    {
+        <div class="alert alert-secondary">
+            Esperando actualizaciones del servidor...
+        </div>
+    }
+    else
+    {
+        <div class="row g-3">
+
+            @foreach (var centro in InventarioState.Centros)
+            {
+                <div class="col-md-4">
+
+                    <EstadoCentroCard
+                        Centro="centro"
+                        OnCentroSeleccionado="SeleccionarCentro" />
+
+                </div>
+            }
+
+        </div>
+    }
+
+    @if (CentroSeleccionadoId is not null)
+    {
+        <div class="alert alert-info mt-4">
+
+            Centro seleccionado:
+
+            <strong>
+                @CentroSeleccionadoId
+            </strong>
+
+        </div>
+    }
+
+</div>
+
+@code {
+
+    private bool StreamingActivo;
+
+    private int? CentroSeleccionadoId;
+
+    protected override void OnInitialized()
+    {
+        InventarioState.PropertyChanged +=
+            EstadoInventarioCambio;
+    }
+
+    private void EstadoInventarioCambio(
+        object? sender,
+        System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private async Task CambiarConexion(
+        bool conectar)
+    {
+        if (conectar)
+        {
+            InventarioState.Limpiar();
+
+            StreamingService.Iniciar();
+
+            StreamingActivo = true;
+        }
+        else
+        {
+            await StreamingService.DetenerAsync();
+
+            StreamingActivo = false;
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private Task SeleccionarCentro(
+        int centroId)
+    {
+        CentroSeleccionadoId = centroId;
+
+        return InvokeAsync(
+            StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        InventarioState.PropertyChanged -=
+            EstadoInventarioCambio;
+    }
+}

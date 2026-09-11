@@ -1,0 +1,715 @@
+
+.centros-page {
+    width: 100%;
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 32px 36px 50px;
+    color: #1f2937;
+}
+
+/* =========================
+   HEADER
+   ========================= */
+
+.centros-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+    margin-bottom: 28px;
+}
+
+.centros-eyebrow,
+.form-eyebrow,
+.table-eyebrow,
+.delete-eyebrow {
+    display: block;
+    margin-bottom: 7px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.4px;
+    color: #6b7280;
+}
+
+.centros-header h1 {
+    margin: 0;
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.centros-header p {
+    margin: 8px 0 0;
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.centros-header-actions {
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+
+/* =========================
+   BUTTONS
+   ========================= */
+
+.centros-button {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .15s ease;
+}
+
+.centros-button:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+}
+
+.centros-button-primary {
+    background: #111827;
+    border-color: #111827;
+    color: white;
+}
+
+.centros-button-primary:hover:not(:disabled) {
+    background: #1f2937;
+}
+
+.centros-button-light {
+    background: white;
+    color: #374151;
+}
+
+.centros-button-light:hover:not(:disabled) {
+    background: #f9fafb;
+}
+
+.centros-button-danger {
+    background: #dc2626;
+    border-color: #dc2626;
+    color: white;
+}
+
+.centros-button-danger:hover:not(:disabled) {
+    background: #b91c1c;
+}
+
+
+/* =========================
+   ALERTS
+   ========================= */
+
+.centros-alert {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 15px;
+    margin-bottom: 18px;
+    border-radius: 8px;
+    font-size: 13px;
+}
+
+.centros-alert button {
+    margin-left: auto;
+    border: 0;
+    background: transparent;
+    font-size: 20px;
+    color: inherit;
+    cursor: pointer;
+}
+
+.centros-alert-success {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #166534;
+}
+
+.centros-alert-error {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+}
+
+
+/* =========================
+   SUMMARY
+   ========================= */
+
+.centros-summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 22px;
+}
+
+.summary-item {
+    padding: 18px 20px;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+}
+
+.summary-label {
+    display: block;
+    color: #6b7280;
+    font-size: 12px;
+    margin-bottom: 7px;
+}
+
+.summary-number {
+    display: block;
+    font-size: 25px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.summary-success {
+    color: #15803d;
+}
+
+.summary-danger {
+    color: #dc2626;
+}
+
+
+/* =========================
+   FORM
+   ========================= */
+
+.centros-form-card {
+    margin-bottom: 22px;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.centros-form-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 22px 24px;
+    background: #fafafa;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.centros-form-header h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.centros-form-header p {
+    margin: 5px 0 0;
+    color: #6b7280;
+    font-size: 13px;
+}
+
+.centros-close-button {
+    width: 32px;
+    height: 32px;
+    border: 1px solid #e5e7eb;
+    border-radius: 7px;
+    background: white;
+    color: #6b7280;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.centros-form-body {
+    padding: 24px;
+}
+
+.centros-form-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.centros-field label {
+    display: block;
+    margin-bottom: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+}
+
+.centros-field label span {
+    color: #dc2626;
+}
+
+.centros-field small {
+    display: block;
+    margin-top: 6px;
+    color: #9ca3af;
+    font-size: 11px;
+}
+
+.centros-field .form-control,
+.centros-field .form-select {
+    border-radius: 7px;
+    border-color: #d1d5db;
+    font-size: 13px;
+}
+
+.centros-form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #f0f0f0;
+}
+
+
+/* =========================
+   LOADING
+   ========================= */
+
+.centros-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    min-height: 180px;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+}
+
+.centros-loading strong,
+.centros-loading span {
+    display: block;
+}
+
+.centros-loading span {
+    margin-top: 3px;
+    color: #9ca3af;
+    font-size: 12px;
+}
+
+
+/* =========================
+   EMPTY
+   ========================= */
+
+.centros-empty {
+    text-align: center;
+    padding: 65px 20px;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+}
+
+.empty-icon {
+    width: 55px;
+    height: 55px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    border-radius: 12px;
+    background: #f3f4f6;
+    color: #6b7280;
+    font-size: 25px;
+}
+
+.centros-empty h2 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.centros-empty p {
+    margin: 7px 0 20px;
+    color: #6b7280;
+    font-size: 13px;
+}
+
+
+/* =========================
+   TABLE
+   ========================= */
+
+.centros-table-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.centros-table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 22px 24px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.centros-table-header h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.centros-table-header p {
+    margin: 5px 0 0;
+    color: #9ca3af;
+    font-size: 12px;
+}
+
+.centros-count {
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: #f3f4f6;
+    color: #4b5563;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.centros-table-wrapper {
+    overflow-x: auto;
+}
+
+.centros-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.centros-table th {
+    padding: 12px 20px;
+    background: #fafafa;
+    border-bottom: 1px solid #e5e7eb;
+    color: #6b7280;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .7px;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.centros-table td {
+    padding: 15px 20px;
+    border-bottom: 1px solid #f3f4f6;
+    vertical-align: middle;
+    font-size: 13px;
+}
+
+.centros-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.centros-table tbody tr:hover {
+    background: #fafafa;
+}
+
+.centro-id {
+    color: #9ca3af;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+
+/* =========================
+   CENTER NAME
+   ========================= */
+
+.centro-name {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+}
+
+.centro-avatar {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9px;
+    background: #f3f4f6;
+    color: #374151;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.centro-name strong,
+.centro-name span {
+    display: block;
+}
+
+.centro-name strong {
+    color: #111827;
+    font-size: 13px;
+}
+
+.centro-name span {
+    margin-top: 2px;
+    color: #9ca3af;
+    font-size: 10px;
+}
+
+
+/* =========================
+   INVENTORY
+   ========================= */
+
+.inventory-value strong {
+    display: block;
+    font-size: 14px;
+    color: #111827;
+}
+
+.inventory-value span {
+    color: #9ca3af;
+    font-size: 10px;
+}
+
+
+/* =========================
+   STATUS
+   ========================= */
+
+.centro-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 9px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+.centro-status-online {
+    background: #f0fdf4;
+    color: #15803d;
+}
+
+.centro-status-online .status-dot {
+    background: #22c55e;
+}
+
+.centro-status-offline {
+    background: #fef2f2;
+    color: #b91c1c;
+}
+
+.centro-status-offline .status-dot {
+    background: #ef4444;
+}
+
+
+/* =========================
+   DATE
+   ========================= */
+
+.update-date strong,
+.update-date span {
+    display: block;
+}
+
+.update-date strong {
+    color: #374151;
+    font-size: 12px;
+}
+
+.update-date span {
+    margin-top: 2px;
+    color: #9ca3af;
+    font-size: 10px;
+}
+
+
+/* =========================
+   ACTIONS
+   ========================= */
+
+.centro-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.centro-action {
+    width: 31px;
+    height: 31px;
+    border: 1px solid #e5e7eb;
+    border-radius: 7px;
+    background: white;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all .15s ease;
+}
+
+.centro-action:hover {
+    background: #f9fafb;
+}
+
+.centro-action-delete:hover {
+    border-color: #fecaca;
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+
+/* =========================
+   DELETE MODAL
+   ========================= */
+
+.centros-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(17, 24, 39, .45);
+}
+
+.centros-delete-modal {
+    width: 100%;
+    max-width: 430px;
+    padding: 28px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, .15);
+}
+
+.delete-modal-icon {
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 14px;
+    border-radius: 10px;
+    background: #fef2f2;
+    color: #dc2626;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.centros-delete-modal h2 {
+    margin: 0;
+    font-size: 20px;
+}
+
+.centros-delete-modal > p {
+    margin: 8px 0 18px;
+    color: #6b7280;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.delete-center-preview {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 12px;
+    margin-bottom: 14px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+}
+
+.delete-center-preview strong,
+.delete-center-preview span {
+    display: block;
+}
+
+.delete-center-preview strong {
+    font-size: 13px;
+}
+
+.delete-center-preview span {
+    margin-top: 3px;
+    color: #9ca3af;
+    font-size: 11px;
+}
+
+.delete-warning {
+    padding: 10px 12px;
+    margin-bottom: 20px;
+    border-radius: 7px;
+    background: #fff7ed;
+    color: #9a3412;
+    font-size: 11px;
+}
+
+.delete-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 9px;
+}
+
+
+/* =========================
+   RESPONSIVE
+   ========================= */
+
+@media (max-width: 1000px) {
+
+    .centros-summary {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .centros-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+@media (max-width: 700px) {
+
+    .centros-page {
+        padding: 22px 16px 40px;
+    }
+
+    .centros-header {
+        flex-direction: column;
+    }
+
+    .centros-header-actions {
+        width: 100%;
+    }
+
+    .centros-header-actions .centros-button {
+        flex: 1;
+    }
+
+    .centros-summary {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .centros-table-header {
+        gap: 15px;
+    }
+
+}
+
+@media (max-width: 480px) {
+
+    .centros-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .centros-form-actions,
+    .delete-modal-actions {
+        flex-direction: column;
+    }
+
+    .centros-form-actions .centros-button,
+    .delete-modal-actions .centros-button {
+        width: 100%;
+    }
+
+}

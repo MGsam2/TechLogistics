@@ -1,0 +1,999 @@
+@page "/dashboard"
+@attribute [Authorize(Roles = "GerenteBodega")]
+@using Microsoft.AspNetCore.Authorization
+@using TechLogistics.Client.Models
+@using TechLogistics.Client.Services
+
+@inject CentroDistribucionApiService CentroService
+@inject InventarioApiService InventarioService
+
+<PageTitle>TechLogistics | Dashboard</PageTitle>
+
+<div class="dashboard-page">
+
+    <!-- ================================================= -->
+    <!-- ENCABEZADO -->
+    <!-- ================================================= -->
+
+    <header class="dashboard-header">
+
+        <div>
+            <span class="dashboard-eyebrow">
+                PANEL DE CONTROL
+            </span>
+
+            <h1>Dashboard</h1>
+
+            <p>
+                Monitoreo general de centros, inventario y operación logística.
+            </p>
+        </div>
+
+        <div class="dashboard-header-actions">
+
+            <span class="dashboard-status">
+                <span class="status-dot"></span>
+                Sistema operativo
+            </span>
+
+            <button class="dashboard-refresh"
+                    @onclick="CargarDatos"
+                    disabled="@cargando">
+
+                <span class="refresh-icon @(cargando ? "spinning" : "")">
+                    ↻
+                </span>
+
+                @(cargando ? "Actualizando..." : "Actualizar")
+
+            </button>
+
+        </div>
+
+    </header>
+
+
+    <!-- ================================================= -->
+    <!-- ERROR -->
+    <!-- ================================================= -->
+
+    @if (!string.IsNullOrWhiteSpace(error))
+    {
+        <div class="dashboard-alert">
+
+            <span class="alert-icon">
+                !
+            </span>
+
+            <div>
+                <strong>No fue posible actualizar el dashboard</strong>
+
+                <p>
+                    @error
+                </p>
+            </div>
+
+        </div>
+    }
+
+
+    <!-- ================================================= -->
+    <!-- INDICADORES GENERALES -->
+    <!-- ================================================= -->
+
+    <section class="dashboard-metrics">
+
+        <div class="metric-card">
+
+            <div class="metric-icon metric-icon-blue">
+                🏢
+            </div>
+
+            <div class="metric-content">
+
+                <span class="metric-label">
+                    Centros
+                </span>
+
+                <strong class="metric-value">
+                    @centros.Count
+                </strong>
+
+                <span class="metric-description">
+                    registrados
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="metric-card">
+
+            <div class="metric-icon metric-icon-purple">
+                📦
+            </div>
+
+            <div class="metric-content">
+
+                <span class="metric-label">
+                    Inventario total
+                </span>
+
+                <strong class="metric-value">
+                    @InventarioTotal.ToString("N0")
+                </strong>
+
+                <span class="metric-description">
+                    unidades disponibles
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="metric-card">
+
+            <div class="metric-icon metric-icon-green">
+                ✓
+            </div>
+
+            <div class="metric-content">
+
+                <span class="metric-label">
+                    Operativos
+                </span>
+
+                <strong class="metric-value">
+                    @CentrosEnLinea
+                </strong>
+
+                <span class="metric-description">
+                    centros en línea
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="metric-card">
+
+            <div class="metric-icon metric-icon-orange">
+                !
+            </div>
+
+            <div class="metric-content">
+
+                <span class="metric-label">
+                    Alertas
+                </span>
+
+                <strong class="metric-value">
+                    @CentrosAdvertencia
+                </strong>
+
+                <span class="metric-description">
+                    centros fuera de línea
+                </span>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================================================= -->
+    <!-- CENTROS -->
+    <!-- ================================================= -->
+
+    <section class="dashboard-section">
+
+        <div class="section-header">
+
+            <div>
+
+                <span class="section-eyebrow">
+                    OPERACIÓN
+                </span>
+
+                <h2>Centros de distribución</h2>
+
+                <p>
+                    Selecciona un centro para consultar su inventario y productos.
+                </p>
+
+            </div>
+
+            <span class="section-count">
+                @centros.Count centros
+            </span>
+
+        </div>
+
+
+        @if (cargando)
+        {
+            <div class="dashboard-loading">
+
+                <div class="loading-spinner"></div>
+
+                <strong>
+                    Cargando información...
+                </strong>
+
+                <span>
+                    Consultando centros e inventario.
+                </span>
+
+            </div>
+        }
+        else if (centros.Count == 0)
+        {
+            <div class="dashboard-empty">
+
+                <div class="empty-icon">
+                    🏢
+                </div>
+
+                <h3>
+                    No hay centros registrados
+                </h3>
+
+                <p>
+                    Registra un centro de distribución para comenzar a monitorear la operación.
+                </p>
+
+                <a href="/centros"
+                   class="dashboard-primary-button">
+
+                    ＋ Registrar centro
+
+                </a>
+
+            </div>
+        }
+        else
+        {
+            <div class="centers-list">
+
+                @foreach (var centro in centros)
+                {
+                    var estaExpandido =
+                        centroSeleccionadoId == centro.Id;
+
+                    var inventarioCentro =
+                        ObtenerInventarioCentro(centro.Id);
+
+                    var totalProductos =
+                        inventarioCentro.Count;
+
+                    var totalUnidades =
+                        inventarioCentro.Sum(i => i.Stock);
+
+
+                    <article class="center-panel @(estaExpandido ? "center-panel-expanded" : "")">
+
+
+                        <!-- ================================= -->
+                        <!-- CABECERA -->
+                        <!-- ================================= -->
+
+                        <button class="center-panel-header"
+                                @onclick="() => AlternarCentro(centro.Id)">
+
+                            <div class="center-main-info">
+
+                                <div class="center-avatar">
+                                    @ObtenerIniciales(centro.Nombre)
+                                </div>
+
+                                <div>
+
+                                    <div class="center-title-row">
+
+                                        <h3>
+                                            @centro.Nombre
+                                        </h3>
+
+                                        <span class="center-id">
+                                            #@centro.Id
+                                        </span>
+
+                                    </div>
+
+
+                                    @if (centro.EnLinea)
+                                    {
+                                        <span class="center-status center-status-online">
+
+                                            <span class="status-dot"></span>
+
+                                            En línea
+
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="center-status center-status-offline">
+
+                                            <span class="status-dot"></span>
+
+                                            Fuera de línea
+
+                                        </span>
+                                    }
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="center-summary">
+
+                                <div class="center-summary-item">
+
+                                    <span>
+                                        Inventario
+                                    </span>
+
+                                    <strong>
+                                        @totalUnidades.ToString("N0")
+                                    </strong>
+
+                                </div>
+
+
+                                <div class="center-summary-item">
+
+                                    <span>
+                                        Productos
+                                    </span>
+
+                                    <strong>
+                                        @totalProductos
+                                    </strong>
+
+                                </div>
+
+
+                                <div class="center-expand-icon @(estaExpandido ? "expanded" : "")">
+                                    ›
+                                </div>
+
+                            </div>
+
+                        </button>
+
+
+                        <!-- ================================= -->
+                        <!-- CONTENIDO DESPLEGABLE -->
+                        <!-- ================================= -->
+
+                        @if (estaExpandido)
+                        {
+                            <div class="center-details">
+
+
+                                <!-- ================================= -->
+                                <!-- RESUMEN DEL CENTRO -->
+                                <!-- ================================= -->
+
+                                <div class="center-overview">
+
+                                    <div class="overview-item">
+
+                                        <span>
+                                            Inventario total
+                                        </span>
+
+                                        <strong>
+                                            @totalUnidades.ToString("N0")
+                                        </strong>
+
+                                        <small>
+                                            unidades
+                                        </small>
+
+                                    </div>
+
+
+                                    <div class="overview-item">
+
+                                        <span>
+                                            Productos
+                                        </span>
+
+                                        <strong>
+                                            @totalProductos
+                                        </strong>
+
+                                        <small>
+                                            productos registrados
+                                        </small>
+
+                                    </div>
+
+
+                                    <div class="overview-item">
+
+                                        <span>
+                                            Estado
+                                        </span>
+
+                                        <strong class="@(centro.EnLinea ? "text-online" : "text-offline")">
+
+                                            @(centro.EnLinea
+                                                ? "En línea"
+                                                : "Fuera de línea")
+
+                                        </strong>
+
+                                        <small>
+                                            estado operativo
+                                        </small>
+
+                                    </div>
+
+
+                                    <div class="overview-item">
+
+                                        <span>
+                                            Actualización
+                                        </span>
+
+                                        <strong>
+                                            @centro.UltimaActualizacion
+                                                .ToLocalTime()
+                                                .ToString("HH:mm")
+                                        </strong>
+
+                                        <small>
+                                            @centro.UltimaActualizacion
+                                                .ToLocalTime()
+                                                .ToString("dd/MM/yyyy")
+                                        </small>
+
+                                    </div>
+
+                                </div>
+
+
+                                <!-- ================================= -->
+                                <!-- PRODUCTOS -->
+                                <!-- ================================= -->
+
+                                <div class="products-section">
+
+                                    <div class="products-section-header">
+
+                                        <div>
+
+                                            <span class="section-eyebrow">
+                                                INVENTARIO
+                                            </span>
+
+                                            <h3>
+                                                Productos del centro
+                                            </h3>
+
+                                            <p>
+                                                Existencias registradas actualmente.
+                                            </p>
+
+                                        </div>
+
+                                        <div class="products-total">
+
+                                            <span>
+                                                Total
+                                            </span>
+
+                                            <strong>
+                                                @totalUnidades.ToString("N0")
+                                            </strong>
+
+                                        </div>
+
+                                    </div>
+
+
+                                    @if (inventarioCentro.Count == 0)
+                                    {
+                                        <div class="no-products">
+
+                                            <div>
+                                                📦
+                                            </div>
+
+                                            <strong>
+                                                Sin productos registrados
+                                            </strong>
+
+                                            <span>
+                                                Este centro todavía no tiene existencias asociadas.
+                                            </span>
+
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="inventory-product-list">
+
+                                            @foreach (var inventario in inventarioCentro)
+                                            {
+                                                var nombreProducto =
+                                                    ObtenerNombreProducto(inventario);
+
+                                                var porcentaje =
+                                                    ObtenerPorcentajeProducto(
+                                                        inventario.Stock,
+                                                        totalUnidades);
+
+
+                                                <div class="inventory-product-row">
+
+                                                    <!-- PRODUCTO -->
+
+                                                    <div class="inventory-product-info">
+
+                                                        <div class="product-mini-avatar">
+                                                            @ObtenerIniciales(nombreProducto)
+                                                        </div>
+
+                                                        <div>
+
+                                                            <strong>
+                                                                @nombreProducto
+                                                            </strong>
+
+                                                            <span>
+                                                                Producto #@inventario.ProductoId
+                                                            </span>
+
+                                                        </div>
+
+                                                    </div>
+
+
+                                                    <!-- CANTIDAD -->
+
+                                                    <div class="inventory-product-stock">
+
+                                                        <span>
+                                                            Cantidad
+                                                        </span>
+
+                                                        <strong>
+                                                            @inventario.Stock.ToString("N0")
+                                                        </strong>
+
+                                                        <small>
+                                                            unidades
+                                                        </small>
+
+                                                    </div>
+
+
+                                                    <!-- PORCENTAJE -->
+
+                                                    <div class="inventory-product-progress">
+
+                                                        <div class="product-progress-header">
+
+                                                            <span>
+                                                                Participación
+                                                            </span>
+
+                                                            <strong>
+                                                                @porcentaje%
+                                                            </strong>
+
+                                                        </div>
+
+                                                        <div class="product-progress">
+
+                                                            <div class="product-progress-fill"
+                                                                 style="width:@porcentaje%">
+                                                            </div>
+
+                                                        </div>
+
+                                                    </div>
+
+                                                </div>
+                                            }
+
+                                        </div>
+                                    }
+
+                                </div>
+
+
+                                <!-- ================================= -->
+                                <!-- ÚLTIMA ACTUALIZACIÓN -->
+                                <!-- ================================= -->
+
+                                <div class="center-last-update">
+
+                                    <div class="last-update-icon">
+                                        🕐
+                                    </div>
+
+                                    <div>
+
+                                        <span>
+                                            Última actualización del centro
+                                        </span>
+
+                                        <strong>
+                                            @centro.UltimaActualizacion
+                                                .ToLocalTime()
+                                                .ToString("dd/MM/yyyy HH:mm:ss")
+                                        </strong>
+
+                                    </div>
+
+                                </div>
+
+
+                                <!-- ================================= -->
+                                <!-- ACCIONES -->
+                                <!-- ================================= -->
+
+                                <div class="center-actions">
+
+                                    <a href="/inventario"
+                                       class="center-action">
+
+                                        <span>
+                                            📊
+                                        </span>
+
+                                        Ver inventario
+
+                                        <span class="action-arrow">
+                                            →
+                                        </span>
+
+                                    </a>
+
+
+                                    <a href="/centros"
+                                       class="center-action">
+
+                                        <span>
+                                            ⚙
+                                        </span>
+
+                                        Administrar centro
+
+                                        <span class="action-arrow">
+                                            →
+                                        </span>
+
+                                    </a>
+
+                                </div>
+
+                            </div>
+                        }
+
+                    </article>
+                }
+
+            </div>
+        }
+
+    </section>
+
+
+    <!-- ================================================= -->
+    <!-- ACCIONES RÁPIDAS -->
+    <!-- ================================================= -->
+
+    <section class="dashboard-section quick-section">
+
+        <div class="section-header">
+
+            <div>
+
+                <span class="section-eyebrow">
+                    ADMINISTRACIÓN
+                </span>
+
+                <h2>Acciones rápidas</h2>
+
+                <p>
+                    Accede directamente a las principales funciones del sistema.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="quick-actions">
+
+            <a href="/catalogo"
+               class="quick-action-card">
+
+                <div class="quick-action-icon">
+                    📦
+                </div>
+
+                <div class="quick-action-content">
+
+                    <strong>
+                        Catálogo
+                    </strong>
+
+                    <span>
+                        Gestionar productos y categorías.
+                    </span>
+
+                </div>
+
+                <span class="quick-action-arrow">
+                    →
+                </span>
+
+            </a>
+
+
+            <a href="/centros"
+               class="quick-action-card">
+
+                <div class="quick-action-icon">
+                    🏢
+                </div>
+
+                <div class="quick-action-content">
+
+                    <strong>
+                        Centros
+                    </strong>
+
+                    <span>
+                        Administrar centros de distribución.
+                    </span>
+
+                </div>
+
+                <span class="quick-action-arrow">
+                    →
+                </span>
+
+            </a>
+
+
+            <a href="/inventario"
+               class="quick-action-card">
+
+                <div class="quick-action-icon">
+                    📊
+                </div>
+
+                <div class="quick-action-content">
+
+                    <strong>
+                        Inventario
+                    </strong>
+
+                    <span>
+                        Consultar existencias por centro.
+                    </span>
+
+                </div>
+
+                <span class="quick-action-arrow">
+                    →
+                </span>
+
+            </a>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================================================= -->
+    <!-- FOOTER -->
+    <!-- ================================================= -->
+
+    <footer class="dashboard-footer">
+
+        <span>
+            Última consulta
+        </span>
+
+        <strong>
+            @ultimaActualizacion
+                .ToLocalTime()
+                .ToString("dd/MM/yyyy HH:mm:ss")
+        </strong>
+
+    </footer>
+
+</div>
+
+
+@code {
+
+    private List<CentroDistribucion> centros = new();
+
+    private List<InventarioProducto> inventarios = new();
+
+    private bool cargando = true;
+
+    private string? error;
+
+    private DateTime ultimaActualizacion =
+        DateTime.UtcNow;
+
+    private int? centroSeleccionadoId;
+
+
+    /* ================================================
+       INDICADORES GENERALES
+       ================================================ */
+
+    private int InventarioTotal =>
+        inventarios.Sum(i => i.Stock);
+
+
+    private int CentrosEnLinea =>
+        centros.Count(c => c.EnLinea);
+
+
+    private int CentrosAdvertencia =>
+        centros.Count(c => !c.EnLinea);
+
+
+    /* ================================================
+       CARGA INICIAL
+       ================================================ */
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarDatos();
+    }
+
+
+    /* ================================================
+       CARGAR DATOS
+       ================================================ */
+
+    private async Task CargarDatos()
+    {
+        try
+        {
+            cargando = true;
+            error = null;
+
+            centros =
+                await CentroService.ObtenerTodosAsync();
+
+            inventarios =
+                await InventarioService.ObtenerInventarioAsync();
+
+            ultimaActualizacion =
+                DateTime.UtcNow;
+        }
+        catch (Exception ex)
+        {
+            error =
+                $"No fue posible cargar el dashboard: {ex.Message}";
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+
+    /* ================================================
+       EXPANDIR / CONTRAER CENTRO
+       ================================================ */
+
+    private void AlternarCentro(int id)
+    {
+        if (centroSeleccionadoId == id)
+        {
+            centroSeleccionadoId = null;
+        }
+        else
+        {
+            centroSeleccionadoId = id;
+        }
+    }
+
+
+    /* ================================================
+       INVENTARIO DE UN CENTRO
+       ================================================ */
+
+    private List<InventarioProducto> ObtenerInventarioCentro(int centroId)
+    {
+        return inventarios
+            .Where(i => i.CentroDistribucionId == centroId)
+            .OrderByDescending(i => i.Stock)
+            .ToList();
+    }
+
+
+    /* ================================================
+       NOMBRE DEL PRODUCTO
+       ================================================ */
+
+    private string ObtenerNombreProducto(
+        InventarioProducto inventario)
+    {
+        if (!string.IsNullOrWhiteSpace(
+            inventario.ProductoNombre))
+        {
+            return inventario.ProductoNombre;
+        }
+
+        if (inventario.Producto is not null &&
+            !string.IsNullOrWhiteSpace(
+                inventario.Producto.Nombre))
+        {
+            return inventario.Producto.Nombre;
+        }
+
+        return $"Producto #{inventario.ProductoId}";
+    }
+
+
+    /* ================================================
+       PORCENTAJE DEL PRODUCTO
+       ================================================ */
+
+    private int ObtenerPorcentajeProducto(
+        int stock,
+        int total)
+    {
+        if (stock <= 0 || total <= 0)
+        {
+            return 0;
+        }
+
+        return (int)Math.Round(
+            (double)stock / total * 100);
+    }
+
+
+    /* ================================================
+       INICIALES
+       ================================================ */
+
+    private string ObtenerIniciales(string nombre)
+    {
+        if (string.IsNullOrWhiteSpace(nombre))
+        {
+            return "CD";
+        }
+
+        var palabras = nombre
+            .Trim()
+            .Split(
+                ' ',
+                StringSplitOptions.RemoveEmptyEntries);
+
+        if (palabras.Length == 1)
+        {
+            return palabras[0]
+                .Substring(
+                    0,
+                    Math.Min(2, palabras[0].Length))
+                .ToUpper();
+        }
+
+        return $"{palabras[0][0]}{palabras[1][0]}"
+            .ToUpper();
+    }
+
+}

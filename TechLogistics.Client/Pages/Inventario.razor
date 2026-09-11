@@ -1,0 +1,911 @@
+@page "/inventario"
+@attribute [Authorize(Roles = "GerenteBodega,AgenteCampo")]
+@using Microsoft.AspNetCore.Authorization
+@using TechLogistics.Client.Models
+@using TechLogistics.Client.Services
+@using Microsoft.AspNetCore.Components.Authorization
+
+@inject InventarioApiService InventarioService
+
+<PageTitle>TechLogistics | Inventario</PageTitle>
+
+<div class="inventario-page">
+
+    <!-- ENCABEZADO -->
+    <div class="inventario-header">
+
+        <div class="inventario-heading">
+
+            <span class="inventario-eyebrow">
+                GESTIÓN DE INVENTARIO
+            </span>
+
+            <h1>Inventario por centro</h1>
+
+            <p>
+                Consulta y administra las existencias de productos en los centros de distribución.
+            </p>
+
+        </div>
+
+        <div class="header-actions">
+
+            <AuthorizeView Roles="GerenteBodega">
+
+                <Authorized>
+
+                    <button class="inventario-button inventario-button-primary"
+                            @onclick="NuevoInventario">
+
+                        ＋ Nuevo inventario
+
+                    </button>
+
+                </Authorized>
+
+            </AuthorizeView>
+
+            <button class="inventario-button inventario-button-light"
+                    @onclick="CargarDatos"
+                    disabled="@cargando">
+
+                <span class="refresh-icon @(cargando ? "spin" : "")">
+                    ↻
+                </span>
+
+                Actualizar
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- MENSAJES -->
+
+    @if (!string.IsNullOrEmpty(mensaje))
+    {
+        <div class="inventario-message inventario-message-success">
+
+            <span class="message-icon">
+                ✓
+            </span>
+
+            <span class="message-text">
+                @mensaje
+            </span>
+
+            <button class="message-close"
+                    @onclick="LimpiarMensaje">
+                ×
+            </button>
+
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(error))
+    {
+        <div class="inventario-message inventario-message-error">
+
+            <span class="message-icon">
+                !
+            </span>
+
+            <span class="message-text">
+                @error
+            </span>
+
+            <button class="message-close"
+                    @onclick="LimpiarMensaje">
+                ×
+            </button>
+
+        </div>
+    }
+
+
+    <!-- FORMULARIO -->
+<AuthorizeView Roles="GerenteBodega">
+
+    <Authorized>
+    @if (mostrarFormulario)
+    {
+        <div class="form-panel">
+
+            <div class="form-panel-header">
+
+                <div class="form-title">
+
+                    <div class="form-icon">
+                        @(editando ? "✎" : "＋")
+                    </div>
+
+                    <div>
+
+                        <h2>
+                            @(editando
+                                ? "Actualizar inventario"
+                                : "Nuevo inventario")
+                        </h2>
+
+                        <p>
+                            @(editando
+                                ? "Modifica la cantidad disponible."
+                                : "Asigna un producto a un centro de distribución.")
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <button class="close-form"
+                        @onclick="CancelarFormulario"
+                        title="Cerrar">
+
+                    ×
+
+                </button>
+
+            </div>
+
+
+            <div class="form-panel-body">
+
+                <div class="form-grid">
+
+                    <!-- PRODUCTO -->
+
+                    <div class="form-field">
+
+                    <label>
+                        Producto
+                        <span>*</span>
+                    </label>
+
+                    <select class="form-control-custom"
+                            @bind="inventarioFormulario.ProductoId"
+                            disabled="@editando">
+
+                            <option value="0">
+                                Selecciona un producto
+                            </option>
+
+                                @foreach (var producto in productos.Where(p => p.Activo))
+                                {
+                                    <option value="@producto.Id">
+                                        @producto.Nombre
+                                    </option>
+                                }
+
+                                </select>
+
+                                <small>
+                                    Selecciona el producto que tendrá inventario.
+                                </small>
+
+                        <small>
+                            Identificador del producto registrado en el catálogo.
+                        </small>
+
+                    </div>
+
+
+                    <!-- CENTRO -->
+
+                    <div class="form-field">
+
+                        <label>
+                        Centro de distribución
+                        <span>*</span>
+                    </label>
+
+                    <select class="form-control-custom"
+                            @bind="inventarioFormulario.CentroDistribucionId"
+                            disabled="@editando">
+
+                        <option value="0">
+                            Selecciona un centro
+                        </option>
+
+                        @foreach (var centro in centros)
+                        {
+                            <option value="@centro.Id">
+                                @centro.Nombre
+                            </option>
+                        }
+
+                            </select>
+
+                            <small>
+                                Selecciona el centro donde estará almacenado el producto.
+                            </small>
+
+                        <small>
+                            Identificador del centro de distribución.
+                        </small>
+
+                    </div>
+
+
+                    <!-- STOCK -->
+
+                    <div class="form-field">
+
+                        <label>
+                            Stock
+                            <span>*</span>
+                        </label>
+
+                        <input type="number"
+                               min="0"
+                               class="form-control-custom"
+                               @bind="inventarioFormulario.Stock" />
+
+                        <small>
+                            Cantidad disponible del producto.
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ACCIONES -->
+
+                <div class="form-actions">
+
+                    <button class="inventario-button inventario-button-primary save-button"
+                            @onclick="GuardarInventario"
+                            disabled="@guardando">
+
+                        @if (guardando)
+                        {
+                            <span class="refresh-icon spin">
+                                ↻
+                            </span>
+
+                            <span>
+                                Guardando...
+                            </span>
+                        }
+                        else
+                        {
+                            <span>✓</span>
+
+                            <span>
+                                @(editando
+                                    ? "Guardar cambios"
+                                    : "Crear inventario")
+                            </span>
+                        }
+
+                    </button>
+
+                    <button class="inventario-button inventario-button-light"
+                            @onclick="CancelarFormulario"
+                            disabled="@guardando">
+
+                        Cancelar
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+    }   
+        </Authorized>
+
+</AuthorizeView>
+
+
+    <!-- RESUMEN -->
+
+    @if (!cargando)
+    {
+        <div class="summary-card">
+
+            <div class="summary-info">
+
+                <div class="summary-icon">
+                    ▦
+                </div>
+
+                <div>
+
+                    <span>
+                        Registros de inventario
+                    </span>
+
+                    <strong>
+                        @inventarios.Count
+                    </strong>
+
+                </div>
+
+            </div>
+
+            <div class="summary-status">
+
+                <span class="status-dot"></span>
+
+                API conectada
+
+            </div>
+
+        </div>
+    }
+
+
+    <!-- CARGANDO -->
+
+    @if (cargando)
+    {
+        <div class="loading-card">
+
+            <div class="loading-spinner"></div>
+
+            <div class="loading-text">
+
+                <strong>
+                    Cargando inventario
+                </strong>
+
+                <span>
+                    Obteniendo información desde la API...
+                </span>
+
+            </div>
+
+        </div>
+    }
+    else if (inventarios.Count == 0)
+    {
+        <div class="empty-card">
+
+            <div class="empty-icon">
+                ▦
+            </div>
+
+            <h2>
+                No hay registros de inventario
+            </h2>
+
+            <p>
+                Crea el primer registro de inventario para un producto y centro.
+            </p>
+
+            <AuthorizeView Roles="GerenteBodega">
+                <Authorized>
+                    <button class="inventario-button inventario-button-primary"
+                            @onclick="NuevoInventario">
+                        ＋ Nuevo inventario
+                    </button>
+                </Authorized>
+            </AuthorizeView>
+
+        </div>
+    }
+    else
+    {
+        <div class="products-card">
+
+            <div class="products-header">
+
+                <div>
+
+                    <h2>
+                        Inventario
+                    </h2>
+
+                    <span>
+                        Existencias actuales
+                    </span>
+
+                </div>
+
+                <span class="products-count">
+                    @inventarios.Count
+                </span>
+
+            </div>
+
+
+            <div class="table-container">
+
+                <table class="products-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>ID</th>
+                            <th>PRODUCTO</th>
+                            <th>CENTRO</th>
+                            <th>STOCK</th>
+                            <th>ÚLTIMA ACTUALIZACIÓN</th>
+                            <th class="actions-column">
+                                ACCIONES
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var inventario in inventarios)
+                        {
+                            <tr>
+
+                                <td>
+                                    <span class="product-id">
+                                        #@inventario.Id
+                                    </span>
+                                </td>
+
+
+                                <td>
+
+                                    <div class="product-name">
+
+                                        <div class="product-avatar">
+@ObtenerIniciales(
+    inventario.ProductoNombre
+    ?? $"Producto {inventario.ProductoId}")
+                                        </div>
+
+                                        <strong>
+@(inventario.ProductoNombre
+    ?? $"Producto #{inventario.ProductoId}")
+                                        </strong>
+
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+
+                                    <span class="category-badge">
+
+@(inventario.CentroNombre
+    ?? $"Centro #{inventario.CentroDistribucionId}")
+
+                                    </span>
+
+                                </td>
+
+
+                                <td>
+
+                                    @if (inventario.Producto is not null &&
+                                         inventario.Stock <= inventario.Producto.StockMinimo)
+                                    {
+                                        <span class="stock-value stock-low">
+                                            @inventario.Stock
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="stock-value">
+                                            @inventario.Stock
+                                        </span>
+                                    }
+
+                                </td>
+
+
+                                <td>
+
+                                    <span class="update-date">
+                                        @inventario.UltimaActualizacion.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
+                                    </span>
+
+                                </td>
+
+                                <td class="actions-column">
+
+                                    <AuthorizeView Roles="GerenteBodega">
+
+                                        <Authorized>
+
+                                            <div class="row-actions">
+
+                                                <button class="action-btn action-edit"
+                                                        title="Actualizar inventario"
+                                                        @onclick="() => EditarInventario(inventario)">
+
+                                                    ✎
+
+                                                </button>
+
+                                                <button class="action-btn action-delete"
+                                                        title="Eliminar inventario"
+                                                        @onclick="() => SolicitarEliminar(inventario)">
+
+                                                    ×
+
+                                                </button>
+
+                                            </div>
+
+                                        </Authorized>
+
+                                    </AuthorizeView>
+
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+    }
+
+
+    <!-- MODAL ELIMINACIÓN -->
+
+    @if (mostrarConfirmacion)
+    {
+        <div class="modal-overlay">
+
+            <div class="delete-modal">
+
+                <div class="delete-icon">
+                    !
+                </div>
+
+                <h2>
+                    Eliminar inventario
+                </h2>
+
+                <p>
+                    ¿Estás seguro de que deseas eliminar este registro de inventario?
+                </p>
+
+                @if (inventarioAEliminar is not null)
+                {
+                    <div class="product-to-delete">
+
+                        <strong>
+@(inventarioAEliminar.ProductoNombre
+    ?? $"Producto #{inventarioAEliminar.ProductoId}")
+                        </strong>
+
+                        <span>
+@(inventarioAEliminar.CentroNombre
+    ?? $"Centro #{inventarioAEliminar.CentroDistribucionId}")
+                        </span>
+
+                    </div>
+                }
+
+                <div class="delete-warning">
+                    Esta acción no se puede deshacer.
+                </div>
+
+                <div class="delete-actions">
+
+                    <button class="inventario-button inventario-button-light"
+                            @onclick="CancelarEliminar">
+
+                        Cancelar
+
+                    </button>
+
+                    <button class="inventario-button inventario-button-danger"
+                            @onclick="ConfirmarEliminar">
+
+                        Eliminar inventario
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+    }
+
+</div>
+
+
+@code {
+
+    private List<InventarioProducto> inventarios = new();
+    private List<Producto> productos = new();
+    private List<CentroDistribucion> centros = new();
+    private InventarioProducto inventarioFormulario = new();
+
+    private InventarioProducto? inventarioAEliminar;
+
+    private bool cargando = true;
+
+    private bool guardando;
+
+    private bool mostrarFormulario;
+
+    private bool editando;
+
+    private bool mostrarConfirmacion;
+
+    private string? mensaje;
+
+    private string? error;
+
+
+protected override async Task OnInitializedAsync()
+{
+    await CargarDatos();
+}
+
+    private async Task CargarDatos()
+    {
+        try
+        {
+            cargando = true;
+            error = null;
+
+            inventarios =
+                await InventarioService.ObtenerInventarioAsync();
+        }
+        catch (Exception ex)
+        {
+            error =
+                $"No fue posible cargar el inventario: {ex.Message}";
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+    private async Task NuevoInventario()
+    {
+        try
+        {
+            LimpiarMensaje();
+
+            productos =
+                await InventarioService.ObtenerProductosAsync();
+
+            centros =
+                await InventarioService.ObtenerCentrosAsync();
+
+            inventarioFormulario = new InventarioProducto
+            {
+                ProductoId = 0,
+                CentroDistribucionId = 0,
+                Stock = 0
+            };
+
+            editando = false;
+            mostrarFormulario = true;
+        }
+        catch (Exception ex)
+        {
+            error =
+                $"No fue posible cargar los datos para crear el inventario: {ex.Message}";
+        }
+    }
+
+
+private async Task EditarInventario(
+    InventarioProducto inventario)
+{
+    try
+    {
+        LimpiarMensaje();
+
+        productos =
+            await InventarioService.ObtenerProductosAsync();
+
+        centros =
+            await InventarioService.ObtenerCentrosAsync();
+
+        inventarioFormulario = new InventarioProducto
+        {
+            Id = inventario.Id,
+            ProductoId = inventario.ProductoId,
+            CentroDistribucionId = inventario.CentroDistribucionId,
+            Stock = inventario.Stock
+        };
+
+        editando = true;
+        mostrarFormulario = true;
+    }
+    catch (Exception ex)
+    {
+        error =
+            $"No fue posible cargar los datos para editar el inventario: {ex.Message}";
+    }
+}
+
+
+    private async Task GuardarInventario()
+    {
+        try
+        {
+            guardando = true;
+            LimpiarMensaje();
+
+            if (inventarioFormulario.ProductoId <= 0)
+            {
+                error = "El ID del producto debe ser mayor que cero.";
+                return;
+            }
+
+            if (inventarioFormulario.CentroDistribucionId <= 0)
+            {
+                error = "El ID del centro debe ser mayor que cero.";
+                return;
+            }
+
+            if (inventarioFormulario.Stock < 0)
+            {
+                error = "El stock no puede ser negativo.";
+                return;
+            }
+
+
+            if (editando)
+            {
+                var actualizado =
+                    await InventarioService.ActualizarAsync(
+                        inventarioFormulario.Id,
+                        inventarioFormulario);
+
+                if (actualizado)
+                {
+                    mensaje =
+                        "Inventario actualizado correctamente.";
+
+                    mostrarFormulario = false;
+
+                    await CargarDatos();
+                }
+                else
+                {
+                    error =
+                        "No fue posible actualizar el inventario.";
+                }
+            }
+            else
+            {
+                var creado =
+                    await InventarioService.CrearAsync(
+                        inventarioFormulario);
+
+                if (creado is not null)
+                {
+                    mensaje =
+                        "Inventario creado correctamente.";
+
+                    mostrarFormulario = false;
+
+                    await CargarDatos();
+                }
+                else
+                {
+                    error =
+                        "No fue posible crear el inventario.";
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            error =
+                $"Ocurrió un error: {ex.Message}";
+        }
+        finally
+        {
+            guardando = false;
+        }
+    }
+
+
+    private void CancelarFormulario()
+    {
+        mostrarFormulario = false;
+        inventarioFormulario = new();
+
+        LimpiarMensaje();
+    }
+
+
+    private void SolicitarEliminar(
+        InventarioProducto inventario)
+    {
+        LimpiarMensaje();
+
+        inventarioAEliminar = inventario;
+        mostrarConfirmacion = true;
+    }
+
+
+    private void CancelarEliminar()
+    {
+        mostrarConfirmacion = false;
+        inventarioAEliminar = null;
+    }
+
+
+    private async Task ConfirmarEliminar()
+    {
+        if (inventarioAEliminar is null)
+        {
+            return;
+        }
+
+        try
+        {
+            var id = inventarioAEliminar.Id;
+
+            var eliminado =
+                await InventarioService.EliminarAsync(id);
+
+            if (eliminado)
+            {
+                mensaje =
+                    "Inventario eliminado correctamente.";
+
+                mostrarConfirmacion = false;
+                inventarioAEliminar = null;
+
+                await CargarDatos();
+            }
+            else
+            {
+                error =
+                    "No fue posible eliminar el inventario.";
+            }
+        }
+        catch (Exception ex)
+        {
+            error =
+                $"Error al eliminar el inventario: {ex.Message}";
+        }
+    }
+
+
+    private void LimpiarMensaje()
+    {
+        mensaje = null;
+        error = null;
+    }
+
+
+    private string ObtenerIniciales(string nombre)
+    {
+        if (string.IsNullOrWhiteSpace(nombre))
+        {
+            return "PR";
+        }
+
+        var palabras = nombre
+            .Trim()
+            .Split(
+                ' ',
+                StringSplitOptions.RemoveEmptyEntries);
+
+        if (palabras.Length == 1)
+        {
+            return palabras[0]
+                .Substring(
+                    0,
+                    Math.Min(2, palabras[0].Length))
+                .ToUpper();
+        }
+
+        return $"{palabras[0][0]}{palabras[1][0]}"
+            .ToUpper();
+    }
+}

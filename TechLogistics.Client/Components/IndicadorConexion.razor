@@ -1,0 +1,36 @@
+<div class="d-flex align-items-center gap-2">
+
+    <span class="rounded-circle d-inline-block"
+          style="width: 10px; height: 10px; background-color: @(Conectado ? "#198754" : "#6c757d");">
+    </span>
+
+    <span>
+        @(Conectado ? "Streaming conectado" : "Streaming desconectado")
+    </span>
+
+    @if (MostrarBoton)
+    {
+        <button class="btn btn-sm btn-outline-secondary ms-2"
+                @onclick="AlternarConexion">
+            @(Conectado ? "Desconectar" : "Conectar")
+        </button>
+    }
+
+</div>
+
+@code {
+
+    [Parameter]
+    public bool Conectado { get; set; }
+
+    [Parameter]
+    public bool MostrarBoton { get; set; } = true;
+
+    [Parameter]
+    public EventCallback<bool> OnCambioConexion { get; set; }
+
+    private async Task AlternarConexion()
+    {
+        await OnCambioConexion.InvokeAsync(!Conectado);
+    }
+}

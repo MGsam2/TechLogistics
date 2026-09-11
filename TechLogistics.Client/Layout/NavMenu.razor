@@ -1,0 +1,270 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using TechLogistics.Client.Services
+
+@inject JwtAuthenticationStateProvider AuthProvider
+@inject NavigationManager Navigation
+
+<div class="nav-container">
+
+```
+<div class="nav-header">
+
+    <a href="/"
+       class="brand-link">
+
+        <div class="brand-logo">
+            TL
+        </div>
+
+        <div class="brand-text">
+
+            <strong>
+                TechLogistics
+            </strong>
+
+            <span>
+                Administración
+            </span>
+
+        </div>
+
+    </a>
+
+</div>
+
+
+<nav class="nav-menu">
+
+    <!-- ============================== -->
+    <!-- OPCIONES DEL GERENTE -->
+    <!-- ============================== -->
+
+    <AuthorizeView Roles="GerenteBodega">
+
+        <Authorized>
+
+            <div class="nav-section-title">
+                PRINCIPAL
+            </div>
+
+            <div class="nav-item">
+
+                <NavLink class="nav-link"
+                         href="/dashboard"
+                         Match="NavLinkMatch.All">
+
+                    <span class="nav-icon">
+                        <i class="bi bi-speedometer2"></i>
+                    </span>
+
+                    <span class="nav-text">
+                        Dashboard
+                    </span>
+
+                </NavLink>
+
+            </div>
+
+
+            <div class="nav-section-title">
+                ADMINISTRACIÓN
+            </div>
+
+            <div class="nav-item">
+
+                <NavLink class="nav-link"
+                         href="/catalogo">
+
+                    <span class="nav-icon">
+                        <i class="bi bi-box-seam"></i>
+                    </span>
+
+                    <span class="nav-text">
+                        Catálogo
+                    </span>
+
+                </NavLink>
+
+            </div>
+
+
+            <div class="nav-item">
+
+                <NavLink class="nav-link"
+                         href="/centros">
+
+                    <span class="nav-icon">
+                        <i class="bi bi-building"></i>
+                    </span>
+
+                    <span class="nav-text">
+                        Centros de distribución
+                    </span>
+
+                </NavLink>
+
+            </div>
+
+        </Authorized>
+
+    </AuthorizeView>
+
+
+    <!-- ============================== -->
+    <!-- INVENTARIO -->
+    <!-- GERENTE + AGENTE -->
+    <!-- ============================== -->
+
+    <AuthorizeView Roles="GerenteBodega,AgenteCampo">
+
+        <Authorized>
+
+            <div class="nav-section-title">
+                OPERACIONES
+            </div>
+
+            <div class="nav-item">
+
+                <NavLink class="nav-link"
+                         href="/inventario">
+
+                    <span class="nav-icon">
+                        <i class="bi bi-clipboard-data"></i>
+                    </span>
+
+                    <span class="nav-text">
+                        Inventario
+                    </span>
+
+                </NavLink>
+
+            </div>
+
+        </Authorized>
+
+    </AuthorizeView>
+
+
+    <!-- ============================== -->
+    <!-- SISTEMA -->
+    <!-- ============================== -->
+
+    <div class="nav-section-title">
+        SISTEMA
+    </div>
+
+    <div class="nav-item">
+
+        <NavLink class="nav-link"
+                 href="/"
+                 Match="NavLinkMatch.All">
+
+            <span class="nav-icon">
+                <i class="bi bi-house"></i>
+            </span>
+
+            <span class="nav-text">
+                Inicio
+            </span>
+
+        </NavLink>
+
+    </div>
+
+</nav>
+
+
+<!-- ============================== -->
+<!-- FOOTER -->
+<!-- ============================== -->
+
+<div class="nav-footer">
+
+    <!-- ESTADO DEL SISTEMA -->
+
+    <div class="footer-status">
+
+        <span class="status-dot"></span>
+
+        <div>
+
+            <strong>
+                Sistema operativo
+            </strong>
+
+            <span>
+                API conectada
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- ============================== -->
+    <!-- USUARIO ACTUAL -->
+    <!-- ============================== -->
+
+    <AuthorizeView>
+
+        <Authorized>
+
+            <div class="user-info">
+
+                <div class="user-icon">
+
+                    <i class="bi bi-person-circle"></i>
+
+                </div>
+
+                <div class="user-details">
+
+                    <strong>
+                        @context.User.Identity?.Name
+                    </strong>
+
+                    <span>
+                        @context.User.FindFirst("role")?.Value
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- ============================== -->
+            <!-- CERRAR SESIÓN -->
+            <!-- ============================== -->
+
+            <button type="button"
+                    class="logout-button"
+                    @onclick="CerrarSesion">
+
+                <i class="bi bi-box-arrow-right"></i>
+
+                <span>
+                    Cerrar sesión
+                </span>
+
+            </button>
+
+        </Authorized>
+
+    </AuthorizeView>
+
+</div>
+
+</div>
+
+@code {
+
+private async Task CerrarSesion()
+{
+    await AuthProvider.LogoutAsync();
+
+    Navigation.NavigateTo(
+        "/login",
+        forceLoad: true);
+}
+
+}

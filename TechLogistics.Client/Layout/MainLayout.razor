@@ -1,0 +1,91 @@
+﻿@inherits LayoutComponentBase
+@inject NavigationManager Navigation
+
+@if (Navigation.Uri.EndsWith("/login"))
+{
+    @Body
+}
+else
+{
+    <div class="app-layout">
+
+        <!-- ================================================= -->
+        <!-- BARRA LATERAL -->
+        <!-- ================================================= -->
+
+        <aside class="sidebar @(sidebarCollapsed ? "sidebar-collapsed" : "")">
+
+            <NavMenu />
+
+        </aside>
+
+
+        <!-- ================================================= -->
+        <!-- CONTENIDO PRINCIPAL -->
+        <!-- ================================================= -->
+
+        <main class="main-content">
+
+            <!-- BARRA SUPERIOR -->
+
+            <header class="topbar">
+
+                <button class="sidebar-toggle"
+                        @onclick="ToggleSidebar"
+                        title="Mostrar u ocultar menú">
+
+                    <span></span>
+                    <span></span>
+                    <span></span>
+
+                </button>
+
+
+                <div class="topbar-title">
+
+                    <strong>
+                        TechLogistics
+                    </strong>
+
+                    <span>
+                        Administración
+                    </span>
+
+                </div>
+
+
+                <div class="topbar-status">
+
+                    <span class="status-dot"></span>
+
+                    Sistema operativo
+
+                </div>
+
+            </header>
+
+
+            <!-- CONTENIDO -->
+
+            <div class="page-content">
+
+                @Body
+
+            </div>
+
+        </main>
+
+    </div>
+}
+
+
+@code {
+
+    private bool sidebarCollapsed = false;
+
+    private void ToggleSidebar()
+    {
+        sidebarCollapsed = !sidebarCollapsed;
+    }
+
+}

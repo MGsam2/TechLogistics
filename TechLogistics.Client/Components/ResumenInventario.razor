@@ -1,0 +1,48 @@
+<div class="card h-100 shadow-sm">
+
+    <div class="card-body">
+
+        <div class="d-flex justify-content-between align-items-center">
+
+            <div>
+                <small class="text-muted">
+                    @Titulo
+                </small>
+
+                <div class="fs-3 fw-bold">
+                    @Valor
+                </div>
+            </div>
+
+            <div class="fs-2">
+                @Icono
+            </div>
+
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(Descripcion))
+        {
+            <div class="mt-2 text-muted">
+                @Descripcion
+            </div>
+        }
+
+    </div>
+
+</div>
+
+@code {
+
+    [Parameter]
+    public string Titulo { get; set; } = string.Empty;
+
+    [Parameter]
+    public int Valor { get; set; }
+
+    [Parameter]
+    public string Icono { get; set; } = string.Empty;
+
+    [Parameter]
+    public string? Descripcion { get; set; }
+
+}
