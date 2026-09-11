@@ -1,0 +1,19 @@
+@if (EnLinea)
+{
+    <span class="status online">
+        🟢 En línea
+    </span>
+}
+else
+{
+    <span class="status warning">
+        🟡 Advertencia
+    </span>
+}
+
+@code {
+
+    [Parameter]
+    public bool EnLinea { get; set; }
+
+}

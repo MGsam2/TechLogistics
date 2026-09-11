@@ -1,0 +1,33 @@
+.centro-card {
+    transition: all 0.2s ease;
+}
+
+.centro-header {
+    cursor: pointer;
+}
+
+.centro-header:hover {
+    background-color: #f8f9fa;
+}
+
+.detalle-centro {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.detalle-centro div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.detalle-centro span {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.detalle-centro strong {
+    text-align: right;
+}

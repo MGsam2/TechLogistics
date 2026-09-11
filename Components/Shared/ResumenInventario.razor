@@ -1,0 +1,41 @@
+<div class="summary-card">
+
+    <div class="summary-icon">
+        @Icono
+    </div>
+
+    <div>
+        <span class="summary-label">
+            @Titulo
+        </span>
+
+        <strong class="@ClaseValor">
+            @Valor.ToString("N0")
+        </strong>
+
+        <small class="text-muted">
+            @Descripcion
+        </small>
+    </div>
+
+</div>
+
+@code {
+
+    [Parameter]
+    [EditorRequired]
+    public string Titulo { get; set; } = string.Empty;
+
+    [Parameter]
+    public string Icono { get; set; } = "📊";
+
+    [Parameter]
+    public int Valor { get; set; }
+
+    [Parameter]
+    public string Descripcion { get; set; } = string.Empty;
+
+    [Parameter]
+    public string ClaseValor { get; set; } = string.Empty;
+
+}

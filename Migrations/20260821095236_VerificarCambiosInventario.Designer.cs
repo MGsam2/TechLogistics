@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TechLogistics.Data;
@@ -11,9 +12,11 @@ using TechLogistics.Data;
 namespace TechLogistics.Migrations
 {
     [DbContext(typeof(TechLogisticsDbContext))]
-    partial class TechLogisticsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260821095236_VerificarCambiosInventario")]
+    partial class VerificarCambiosInventario
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -107,74 +110,6 @@ namespace TechLogistics.Migrations
                     b.ToTable("Productos");
                 });
 
-            modelBuilder.Entity("TechLogistics.Models.Rol", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Nombre")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Roles");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Nombre = "GerenteBodega"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Nombre = "AgenteCampo"
-                        });
-                });
-
-            modelBuilder.Entity("TechLogistics.Models.Usuario", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<bool>("Activo")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("NombreCompleto")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("character varying(150)");
-
-                    b.Property<string>("NombreUsuario")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<string>("PasswordHash")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("RolId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("NombreUsuario")
-                        .IsUnique();
-
-                    b.HasIndex("RolId");
-
-                    b.ToTable("Usuarios");
-                });
-
             modelBuilder.Entity("TechLogistics.Models.InventarioProducto", b =>
                 {
                     b.HasOne("TechLogistics.Models.CentroDistribucion", "CentroDistribucion")
@@ -194,17 +129,6 @@ namespace TechLogistics.Migrations
                     b.Navigation("Producto");
                 });
 
-            modelBuilder.Entity("TechLogistics.Models.Usuario", b =>
-                {
-                    b.HasOne("TechLogistics.Models.Rol", "Rol")
-                        .WithMany("Usuarios")
-                        .HasForeignKey("RolId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Rol");
-                });
-
             modelBuilder.Entity("TechLogistics.Models.CentroDistribucion", b =>
                 {
                     b.Navigation("Inventarios");
@@ -213,11 +137,6 @@ namespace TechLogistics.Migrations
             modelBuilder.Entity("TechLogistics.Models.Producto", b =>
                 {
                     b.Navigation("Inventarios");
-                });
-
-            modelBuilder.Entity("TechLogistics.Models.Rol", b =>
-                {
-                    b.Navigation("Usuarios");
                 });
 #pragma warning restore 612, 618
         }

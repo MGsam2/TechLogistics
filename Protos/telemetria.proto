@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+option csharp_namespace = "TechLogistics.Grpc";
+
+package telemetria;
+
+service TelemetriaService {
+
+  rpc SuscribirseInventario(
+      SuscripcionInventarioRequest)
+      returns (stream InventarioActualizacion);
+
+}
+
+message SuscripcionInventarioRequest {
+
+  int32 centro_id = 1;
+
+}
+
+message InventarioActualizacion {
+
+  int32 centro_id = 1;
+
+  string nombre_centro = 2;
+
+  int32 inventario_total = 3;
+
+  bool en_linea = 4;
+
+  string ultima_actualizacion = 5;
+
+}

@@ -9,5 +9,9 @@ public class CentroDistribucion
     public int Inventario { get; set; }
 
     public bool EnLinea { get; set; }
+
     public DateTime UltimaActualizacion { get; set; }
+
+    public ICollection<InventarioProducto> Inventarios { get; set; }
+        = new List<InventarioProducto>();
 }
