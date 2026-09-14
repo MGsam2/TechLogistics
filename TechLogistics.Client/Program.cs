@@ -8,12 +8,13 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
-builder.Services.AddScoped<AuthorizationMessageHandler>();
+builder.Services.AddScoped<JwtAuthorizationMessageHandler>();
+builder.Services.AddScoped<InventarioHistorialApiService>();
 
 builder.Services.AddScoped(sp =>
 {
     var handler = sp.GetRequiredService<
-        AuthorizationMessageHandler>();
+        JwtAuthorizationMessageHandler>();
 
     handler.InnerHandler =
         new HttpClientHandler();

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TechLogistics.Data;
@@ -11,9 +12,11 @@ using TechLogistics.Data;
 namespace TechLogistics.Migrations
 {
     [DbContext(typeof(TechLogisticsDbContext))]
-    partial class TechLogisticsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260914010231_SincronizarHistorialInventario")]
+    partial class SincronizarHistorialInventario
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

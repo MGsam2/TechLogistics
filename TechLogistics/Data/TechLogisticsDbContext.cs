@@ -11,6 +11,9 @@ public class TechLogisticsDbContext : DbContext
     {
     }
 
+    public DbSet<InventarioHistorial> InventarioHistorial
+    => Set<InventarioHistorial>();
+
     public DbSet<CentroDistribucion> CentrosDistribucion
         => Set<CentroDistribucion>();
 
@@ -58,6 +61,40 @@ public class TechLogisticsDbContext : DbContext
                 i.CentroDistribucionId
             })
             .IsUnique();
+
+            // =====================================================
+            // HISTORIAL -> PRODUCTO
+            // =====================================================
+
+            modelBuilder.Entity<InventarioHistorial>()
+                .HasOne(h => h.Producto)
+                .WithMany()
+                .HasForeignKey(h => h.ProductoId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // =====================================================
+            // HISTORIAL -> CENTRO
+            // =====================================================
+
+            modelBuilder.Entity<InventarioHistorial>()
+                .HasOne(h => h.CentroDistribucion)
+                .WithMany()
+                .HasForeignKey(h => h.CentroDistribucionId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // =====================================================
+            // ÍNDICES DEL HISTORIAL
+            // =====================================================
+
+            modelBuilder.Entity<InventarioHistorial>()
+                .HasIndex(h => h.FechaMovimiento);
+
+            modelBuilder.Entity<InventarioHistorial>()
+                .HasIndex(h => new
+                {
+                    h.ProductoId,
+                    h.CentroDistribucionId
+                });
 
         // =====================================================
         // ROL -> USUARIOS

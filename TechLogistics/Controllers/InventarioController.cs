@@ -187,6 +187,183 @@ public class InventarioController : ControllerBase
         return Ok(inventario);
     }
 
+        // ============================================================
+    // GET: api/inventario/historial
+    // Obtener todo el historial de movimientos
+    // Acceso: GerenteBodega y AgenteCampo
+    // ============================================================
+    [HttpGet("historial")]
+    public async Task<ActionResult<IEnumerable<object>>> ObtenerHistorial()
+    {
+        var historial = await context.InventarioHistorial
+            .AsNoTracking()
+            .OrderByDescending(h => h.FechaMovimiento)
+            .Select(h => new
+            {
+                h.Id,
+                h.ProductoId,
+
+                ProductoNombre = h.Producto != null
+                    ? h.Producto.Nombre
+                    : null,
+
+                h.CentroDistribucionId,
+
+                CentroNombre = h.CentroDistribucion != null
+                    ? h.CentroDistribucion.Nombre
+                    : null,
+
+                h.StockAnterior,
+                h.StockNuevo,
+                h.Diferencia,
+                h.TipoMovimiento,
+                h.FechaMovimiento
+            })
+            .ToListAsync();
+
+        return Ok(historial);
+    }
+
+    // ============================================================
+    // GET: api/inventario/historial/1
+    // Obtener un movimiento específico
+    // Acceso: GerenteBodega y AgenteCampo
+    // ============================================================
+    [HttpGet("historial/{id:int}")]
+    public async Task<ActionResult<object>> ObtenerHistorialPorId(
+        int id)
+    {
+        var historial = await context.InventarioHistorial
+            .AsNoTracking()
+            .Where(h => h.Id == id)
+            .Select(h => new
+            {
+                h.Id,
+                h.ProductoId,
+
+                ProductoNombre = h.Producto != null
+                    ? h.Producto.Nombre
+                    : null,
+
+                h.CentroDistribucionId,
+
+                CentroNombre = h.CentroDistribucion != null
+                    ? h.CentroDistribucion.Nombre
+                    : null,
+
+                h.StockAnterior,
+                h.StockNuevo,
+                h.Diferencia,
+                h.TipoMovimiento,
+                h.FechaMovimiento
+            })
+            .FirstOrDefaultAsync();
+
+        if (historial is null)
+        {
+            return NotFound(
+                "El movimiento de historial no existe.");
+        }
+
+        return Ok(historial);
+    }
+
+    // ============================================================
+    // GET: api/inventario/historial/producto/1
+    // Obtener historial de un producto
+    // Acceso: GerenteBodega y AgenteCampo
+    // ============================================================
+    [HttpGet("historial/producto/{productoId:int}")]
+    public async Task<ActionResult<IEnumerable<object>>>
+        ObtenerHistorialPorProducto(int productoId)
+    {
+        var productoExiste = await context.Productos
+            .AnyAsync(p => p.Id == productoId);
+
+        if (!productoExiste)
+        {
+            return NotFound(
+                "El producto indicado no existe.");
+        }
+
+        var historial = await context.InventarioHistorial
+            .AsNoTracking()
+            .Where(h => h.ProductoId == productoId)
+            .OrderByDescending(h => h.FechaMovimiento)
+            .Select(h => new
+            {
+                h.Id,
+                h.ProductoId,
+
+                ProductoNombre = h.Producto != null
+                    ? h.Producto.Nombre
+                    : null,
+
+                h.CentroDistribucionId,
+
+                CentroNombre = h.CentroDistribucion != null
+                    ? h.CentroDistribucion.Nombre
+                    : null,
+
+                h.StockAnterior,
+                h.StockNuevo,
+                h.Diferencia,
+                h.TipoMovimiento,
+                h.FechaMovimiento
+            })
+            .ToListAsync();
+
+        return Ok(historial);
+    }
+
+    // ============================================================
+    // GET: api/inventario/historial/centro/1
+    // Obtener historial de un centro
+    // Acceso: GerenteBodega y AgenteCampo
+    // ============================================================
+    [HttpGet("historial/centro/{centroId:int}")]
+    public async Task<ActionResult<IEnumerable<object>>>
+        ObtenerHistorialPorCentro(int centroId)
+    {
+        var centroExiste = await context.CentrosDistribucion
+            .AnyAsync(c => c.Id == centroId);
+
+        if (!centroExiste)
+        {
+            return NotFound(
+                "El centro de distribución indicado no existe.");
+        }
+
+        var historial = await context.InventarioHistorial
+            .AsNoTracking()
+            .Where(h => h.CentroDistribucionId == centroId)
+            .OrderByDescending(h => h.FechaMovimiento)
+            .Select(h => new
+            {
+                h.Id,
+                h.ProductoId,
+
+                ProductoNombre = h.Producto != null
+                    ? h.Producto.Nombre
+                    : null,
+
+                h.CentroDistribucionId,
+
+                CentroNombre = h.CentroDistribucion != null
+                    ? h.CentroDistribucion.Nombre
+                    : null,
+
+                h.StockAnterior,
+                h.StockNuevo,
+                h.Diferencia,
+                h.TipoMovimiento,
+                h.FechaMovimiento
+            })
+            .ToListAsync();
+
+        return Ok(historial);
+    }
+    
     // ============================================================
     // POST: api/inventario
     // Crear inventario
@@ -235,12 +412,25 @@ public class InventarioController : ControllerBase
                 "Ya existe inventario para este producto en este centro.");
         }
 
-        inventario.UltimaActualizacion =
-            DateTime.UtcNow;
+inventario.UltimaActualizacion =
+    DateTime.UtcNow;
 
-        context.InventariosProductos.Add(inventario);
+context.InventariosProductos.Add(inventario);
 
-        await context.SaveChangesAsync();
+var historial = new InventarioHistorial
+{
+    ProductoId = inventario.ProductoId,
+    CentroDistribucionId = inventario.CentroDistribucionId,
+    StockAnterior = 0,
+    StockNuevo = inventario.Stock,
+    Diferencia = inventario.Stock,
+    TipoMovimiento = "CREACION",
+    FechaMovimiento = DateTime.UtcNow
+};
+
+context.InventarioHistorial.Add(historial);
+
+await context.SaveChangesAsync();
 
         logger.LogInformation(
             "Inventario creado: Producto {ProductoId}, Centro {CentroId}, Stock {Stock}",
@@ -298,13 +488,33 @@ public class InventarioController : ControllerBase
                 "El registro de inventario no existe.");
         }
 
-        inventarioExistente.Stock =
-            inventario.Stock;
+var stockAnterior =
+    inventarioExistente.Stock;
 
-        inventarioExistente.UltimaActualizacion =
-            DateTime.UtcNow;
+var stockNuevo =
+    inventario.Stock;
 
-        await context.SaveChangesAsync();
+inventarioExistente.Stock =
+    stockNuevo;
+
+inventarioExistente.UltimaActualizacion =
+    DateTime.UtcNow;
+
+var historial = new InventarioHistorial
+{
+    ProductoId = inventarioExistente.ProductoId,
+    CentroDistribucionId =
+        inventarioExistente.CentroDistribucionId,
+    StockAnterior = stockAnterior,
+    StockNuevo = stockNuevo,
+    Diferencia = stockNuevo - stockAnterior,
+    TipoMovimiento = "ACTUALIZACION",
+    FechaMovimiento = DateTime.UtcNow
+};
+
+context.InventarioHistorial.Add(historial);
+
+await context.SaveChangesAsync();
 
         logger.LogInformation(
             "Inventario actualizado: {InventarioId}, Stock {Stock}",
@@ -334,9 +544,23 @@ public class InventarioController : ControllerBase
                 "El registro de inventario no existe.");
         }
 
-        context.InventariosProductos.Remove(inventario);
+var historial = new InventarioHistorial
+{
+    ProductoId = inventario.ProductoId,
+    CentroDistribucionId =
+        inventario.CentroDistribucionId,
+    StockAnterior = inventario.Stock,
+    StockNuevo = 0,
+    Diferencia = -inventario.Stock,
+    TipoMovimiento = "ELIMINACION",
+    FechaMovimiento = DateTime.UtcNow
+};
 
-        await context.SaveChangesAsync();
+context.InventarioHistorial.Add(historial);
+
+context.InventariosProductos.Remove(inventario);
+
+await context.SaveChangesAsync();
 
         logger.LogInformation(
             "Inventario eliminado: {InventarioId}",

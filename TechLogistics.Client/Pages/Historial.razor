@@ -1,0 +1,159 @@
+@page "/historial"
+
+@using TechLogistics.Client.Models
+@using TechLogistics.Client.Services
+
+@inject InventarioHistorialApiService HistorialService
+
+<PageTitle>Historial de Inventario</PageTitle>
+
+<div class="container-fluid py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">Historial de Inventario</h2>
+            <p class="text-muted mb-0">
+                Movimientos registrados del inventario.
+            </p>
+        </div>
+
+        <button class="btn btn-outline-secondary"
+                @onclick="CargarHistorialAsync">
+            Actualizar
+        </button>
+    </div>
+
+    @if (cargando)
+    {
+        <div class="alert alert-light border">
+            Cargando historial...
+        </div>
+    }
+    else if (!string.IsNullOrWhiteSpace(error))
+    {
+        <div class="alert alert-danger">
+            @error
+        </div>
+    }
+    else if (historial.Count == 0)
+    {
+        <div class="alert alert-light border">
+            No existen movimientos registrados.
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm">
+            <div class="card-body">
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Producto</th>
+                                <th>Centro</th>
+                                <th>Anterior</th>
+                                <th>Nuevo</th>
+                                <th>Diferencia</th>
+                                <th>Movimiento</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var movimiento in historial)
+                            {
+                                <tr>
+                                    <td>
+                                        @movimiento.FechaMovimiento.ToLocalTime()
+                                            .ToString("dd/MM/yyyy HH:mm:ss")
+                                    </td>
+
+                                    <td>
+                                        @movimiento.ProductoNombre
+                                    </td>
+
+                                    <td>
+                                        @movimiento.CentroNombre
+                                    </td>
+
+                                    <td>
+                                        @movimiento.StockAnterior
+                                    </td>
+
+                                    <td class="fw-bold">
+                                        @movimiento.StockNuevo
+                                    </td>
+
+                                    <td>
+                                        @if (movimiento.Diferencia > 0)
+                                        {
+                                            <span class="text-success fw-bold">
+                                                +@movimiento.Diferencia
+                                            </span>
+                                        }
+                                        else if (movimiento.Diferencia < 0)
+                                        {
+                                            <span class="text-danger fw-bold">
+                                                @movimiento.Diferencia
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">
+                                                0
+                                            </span>
+                                        }
+                                    </td>
+
+                                    <td>
+                                        <span class="badge bg-secondary">
+                                            @movimiento.TipoMovimiento
+                                        </span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private List<InventarioHistorialDto> historial = new();
+
+    private bool cargando = true;
+
+    private string? error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarHistorialAsync();
+    }
+
+    private async Task CargarHistorialAsync()
+    {
+        cargando = true;
+        error = null;
+
+        try
+        {
+            historial =
+                await HistorialService.ObtenerHistorialAsync();
+        }
+        catch (Exception ex)
+        {
+            error =
+                $"No fue posible obtener el historial: {ex.Message}";
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+}

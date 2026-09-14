@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TechLogistics.Data;
@@ -11,9 +12,11 @@ using TechLogistics.Data;
 namespace TechLogistics.Migrations
 {
     [DbContext(typeof(TechLogisticsDbContext))]
-    partial class TechLogisticsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260914003930_CrearHistorialInventario")]
+    partial class CrearHistorialInventario
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -46,48 +49,6 @@ namespace TechLogistics.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("CentrosDistribucion");
-                });
-
-            modelBuilder.Entity("TechLogistics.Models.InventarioHistorial", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CentroDistribucionId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Diferencia")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("FechaMovimiento")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("ProductoId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("StockAnterior")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("StockNuevo")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("TipoMovimiento")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CentroDistribucionId");
-
-                    b.HasIndex("FechaMovimiento");
-
-                    b.HasIndex("ProductoId", "CentroDistribucionId");
-
-                    b.ToTable("InventarioHistorial");
                 });
 
             modelBuilder.Entity("TechLogistics.Models.InventarioProducto", b =>
@@ -215,25 +176,6 @@ namespace TechLogistics.Migrations
                     b.HasIndex("RolId");
 
                     b.ToTable("Usuarios");
-                });
-
-            modelBuilder.Entity("TechLogistics.Models.InventarioHistorial", b =>
-                {
-                    b.HasOne("TechLogistics.Models.CentroDistribucion", "CentroDistribucion")
-                        .WithMany()
-                        .HasForeignKey("CentroDistribucionId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("TechLogistics.Models.Producto", "Producto")
-                        .WithMany()
-                        .HasForeignKey("ProductoId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("CentroDistribucion");
-
-                    b.Navigation("Producto");
                 });
 
             modelBuilder.Entity("TechLogistics.Models.InventarioProducto", b =>

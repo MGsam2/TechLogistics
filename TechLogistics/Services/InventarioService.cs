@@ -17,10 +17,6 @@ public class InventarioService
         this.logger = logger;
     }
 
-    // ==========================================
-    // OBTENER CENTROS
-    // ==========================================
-
     public async Task<List<CentroDistribucion>> ObtenerCentrosAsync()
     {
         return await context.CentrosDistribucion
@@ -29,82 +25,86 @@ public class InventarioService
             .ToListAsync();
     }
 
-    // ==========================================
-    // ACTUALIZAR INVENTARIO
-    // ==========================================
-
     public async Task<List<CentroDistribucion>> ActualizarInventarioAsync(
         int minimoCambio = -20,
         int maximoCambio = 50)
     {
-        var centros = await context.CentrosDistribucion
-            .ToListAsync();
+        var centros =
+            await context.CentrosDistribucion.ToListAsync();
 
-        var inventarios = await context.InventariosProductos
-            .ToListAsync();
+        var inventarios =
+            await context.InventariosProductos.ToListAsync();
 
         var random = new Random();
 
-        // ==========================================
-        // 1. ACTUALIZAR STOCK DE CADA PRODUCTO
-        // ==========================================
-
         foreach (var inventario in inventarios)
         {
-            // Simula entradas y salidas de inventario.
-            // Puede aumentar o disminuir el stock.
-            var cambio = random.Next(
-                minimoCambio,
-                maximoCambio + 1);
+            var stockAnterior = inventario.Stock;
+
+            var cambio =
+                random.Next(minimoCambio, maximoCambio + 1);
 
             inventario.Stock += cambio;
 
-            // El stock nunca puede ser negativo.
             if (inventario.Stock < 0)
             {
                 inventario.Stock = 0;
             }
 
-            inventario.UltimaActualizacion = DateTime.UtcNow;
+            var stockNuevo = inventario.Stock;
+
+            inventario.UltimaActualizacion =
+                DateTime.UtcNow;
+
+            // ====================================================
+            // REGISTRAR MOVIMIENTO EN HISTORIAL
+            // ====================================================
+
+            var historial = new InventarioHistorial
+            {
+                ProductoId = inventario.ProductoId,
+                CentroDistribucionId =
+                    inventario.CentroDistribucionId,
+                StockAnterior = stockAnterior,
+                StockNuevo = stockNuevo,
+                Diferencia = stockNuevo - stockAnterior,
+                TipoMovimiento = "SIMULACION",
+                FechaMovimiento = DateTime.UtcNow
+            };
+
+            context.InventarioHistorial.Add(historial);
 
             logger.LogDebug(
-                "Producto {ProductoId}, Centro {CentroId}: cambio {Cambio}, stock actual {Stock}",
+                "Producto {ProductoId}, Centro {CentroId}: " +
+                "stock {StockAnterior} -> {StockNuevo}, cambio {Cambio}",
                 inventario.ProductoId,
                 inventario.CentroDistribucionId,
-                cambio,
-                inventario.Stock);
+                stockAnterior,
+                stockNuevo,
+                cambio);
         }
-
-        // ==========================================
-        // 2. RECALCULAR INVENTARIO DE CADA CENTRO
-        // ==========================================
 
         foreach (var centro in centros)
         {
-            centro.Inventario = inventarios
-                .Where(i =>
-                    i.CentroDistribucionId == centro.Id)
-                .Sum(i => i.Stock);
+            centro.Inventario =
+                inventarios
+                    .Where(i =>
+                        i.CentroDistribucionId == centro.Id)
+                    .Sum(i => i.Stock);
 
-            // Simulación del estado operativo del centro.
-            // 80% aproximadamente en línea.
-            centro.EnLinea = random.Next(0, 10) < 8;
+            centro.EnLinea =
+                random.Next(0, 10) < 8;
 
-            centro.UltimaActualizacion = DateTime.UtcNow;
+            centro.UltimaActualizacion =
+                DateTime.UtcNow;
         }
-
-        // ==========================================
-        // 3. GUARDAR CAMBIOS
-        // ==========================================
 
         await context.SaveChangesAsync();
 
-        // ==========================================
-        // 4. REGISTRAR ACTUALIZACIÓN
-        // ==========================================
-
         logger.LogInformation(
-            "Inventario actualizado correctamente: {CantidadCentros} centros y {CantidadProductos} registros de inventario.",
+            "Inventario actualizado correctamente: " +
+            "{CantidadCentros} centros y " +
+            "{CantidadProductos} registros de inventario.",
             centros.Count,
             inventarios.Count);
 
