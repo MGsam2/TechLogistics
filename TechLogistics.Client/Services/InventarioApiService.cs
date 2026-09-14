@@ -18,8 +18,13 @@ public class InventarioApiService
 
     public async Task<List<InventarioProducto>> ObtenerInventarioAsync()
     {
-        return await httpClient.GetFromJsonAsync<List<InventarioProducto>>(
-            "api/inventario")
+        var respuesta = await httpClient.GetAsync(
+            "api/inventario");
+
+        respuesta.EnsureSuccessStatusCode();
+
+        return await respuesta.Content
+            .ReadFromJsonAsync<List<InventarioProducto>>()
             ?? new List<InventarioProducto>();
     }
 

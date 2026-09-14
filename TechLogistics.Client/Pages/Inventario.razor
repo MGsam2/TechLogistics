@@ -6,6 +6,9 @@
 @using Microsoft.AspNetCore.Components.Authorization
 
 @inject InventarioApiService InventarioService
+@inject OfflineStorageService OfflineStorage
+@inject OfflineSyncService OfflineSync
+@inject ConectividadService Conectividad
 
 <PageTitle>TechLogistics | Inventario</PageTitle>
 
@@ -436,9 +439,9 @@
 
                     <tbody>
 
-                        @foreach (var inventario in inventarios)
-                        {
-                            <tr>
+                            @foreach (var inventario in inventarios)
+                            {
+                                <tr @key="inventario.Id">
 
                                 <td>
                                     <span class="product-id">
@@ -617,6 +620,7 @@
 
 </div>
 
+@implements IAsyncDisposable
 
 @code {
 
@@ -644,29 +648,81 @@
 
 protected override async Task OnInitializedAsync()
 {
+    Conectividad.EstadoConexionCambiado +=
+        EstadoConexionCambiado;
+
     await CargarDatos();
+
+    await Conectividad.IniciarAsync();
 }
 
-    private async Task CargarDatos()
+private async void EstadoConexionCambiado(
+    bool conectado)
+{
+    await InvokeAsync(async () =>
     {
-        try
+        if (conectado)
         {
-            cargando = true;
+            mensaje =
+                "Conexión recuperada. Sincronizando operaciones pendientes...";
+
             error = null;
 
-            inventarios =
-                await InventarioService.ObtenerInventarioAsync();
+            var sincronizadas =
+                await OfflineSync.SincronizarAsync();
+
+            if (sincronizadas > 0)
+            {
+                mensaje =
+                    $"Conexión recuperada. " +
+                    $"{sincronizadas} operación(es) sincronizada(s).";
+
+                await CargarDatos();
+            }
+            else
+            {
+                mensaje =
+                    "Conexión recuperada. No hay operaciones pendientes.";
+            }
+
+            StateHasChanged();
         }
-        catch (Exception ex)
+        else
         {
-            error =
-                $"No fue posible cargar el inventario: {ex.Message}";
+            mensaje =
+                "Sin conexión. Los cambios se guardarán localmente.";
+
+            error = null;
+
+            StateHasChanged();
         }
-        finally
-        {
-            cargando = false;
-        }
+    });
+}
+
+private async Task CargarDatos()
+{
+    try
+    {
+        cargando = true;
+        error = null;
+
+        var datos =
+            await InventarioService.ObtenerInventarioAsync();
+
+        inventarios = datos;
+
+        await InvokeAsync(StateHasChanged);
     }
+    catch (Exception ex)
+    {
+        error =
+            $"No fue posible cargar el inventario: {ex.Message}";
+    }
+    finally
+    {
+        cargando = false;
+    }
+}
 
     private async Task NuevoInventario()
     {
@@ -755,48 +811,113 @@ private async Task EditarInventario(
                 return;
             }
 
-
             if (editando)
             {
-                var actualizado =
-                    await InventarioService.ActualizarAsync(
-                        inventarioFormulario.Id,
-                        inventarioFormulario);
-
-                if (actualizado)
+                try
                 {
+                    var actualizado =
+                        await InventarioService.ActualizarAsync(
+                            inventarioFormulario.Id,
+                            inventarioFormulario);
+
+                    if (actualizado)
+                    {
+                        mensaje =
+                            "Inventario actualizado correctamente.";
+
+                        mostrarFormulario = false;
+
+                        await CargarDatos();
+
+                        return;
+                    }
+
+                    error =
+                        "No se pudo actualizar el inventario. " +
+                        "El servidor rechazó la operación.";
+
+                    return;
+                }
+                catch (HttpRequestException)
+                {
+                    await OfflineStorage.GuardarOperacionAsync(
+                        new OperacionOffline
+                        {
+                            InventarioId =
+                                inventarioFormulario.Id,
+
+                            ProductoId =
+                                inventarioFormulario.ProductoId,
+
+                            CentroDistribucionId =
+                                inventarioFormulario.CentroDistribucionId,
+
+                            Stock =
+                                inventarioFormulario.Stock,
+
+                            TipoOperacion =
+                                "ACTUALIZACION"
+                        });
+
                     mensaje =
-                        "Inventario actualizado correctamente.";
+                        "Sin conexión. El cambio quedó guardado " +
+                        "localmente y será sincronizado al recuperar " +
+                        "la conexión.";
 
                     mostrarFormulario = false;
-
-                    await CargarDatos();
-                }
-                else
-                {
-                    error =
-                        "No fue posible actualizar el inventario.";
                 }
             }
-            else
+                        else
             {
-                var creado =
-                    await InventarioService.CrearAsync(
-                        inventarioFormulario);
-
-                if (creado is not null)
+                try
                 {
+                    var creado =
+                        await InventarioService.CrearAsync(
+                            inventarioFormulario);
+
+                    if (creado is not null)
+                    {
+                        mensaje =
+                            "Inventario creado correctamente.";
+
+                        mostrarFormulario = false;
+
+                        await CargarDatos();
+
+                        return;
+                    }
+
+                    error =
+                        "No se pudo crear el inventario. " +
+                        "El producto ya puede tener inventario " +
+                        "registrado en ese centro.";
+
+                    return;
+                }
+                catch (HttpRequestException)
+                {
+                    await OfflineStorage.GuardarOperacionAsync(
+                        new OperacionOffline
+                        {
+                            ProductoId =
+                                inventarioFormulario.ProductoId,
+
+                            CentroDistribucionId =
+                                inventarioFormulario.CentroDistribucionId,
+
+                            Stock =
+                                inventarioFormulario.Stock,
+
+                            TipoOperacion =
+                                "CREACION"
+                        });
+
                     mensaje =
-                        "Inventario creado correctamente.";
+                        "Sin conexión. El nuevo inventario quedó " +
+                        "guardado localmente y será sincronizado " +
+                        "al recuperar la conexión.";
 
                     mostrarFormulario = false;
-
-                    await CargarDatos();
-                }
-                else
-                {
-                    error =
-                        "No fue posible crear el inventario.";
                 }
             }
         }
@@ -810,7 +931,6 @@ private async Task EditarInventario(
             guardando = false;
         }
     }
-
 
     private void CancelarFormulario()
     {
@@ -908,4 +1028,15 @@ private async Task EditarInventario(
         return $"{palabras[0][0]}{palabras[1][0]}"
             .ToUpper();
     }
+
+
+
+
+    public ValueTask DisposeAsync()
+{
+    Conectividad.EstadoConexionCambiado -=
+        EstadoConexionCambiado;
+
+    return ValueTask.CompletedTask;
+}
 }

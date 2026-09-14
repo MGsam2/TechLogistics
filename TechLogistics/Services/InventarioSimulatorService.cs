@@ -40,7 +40,7 @@ public class InventarioSimulatorService : BackgroundService
                 // ACTUALIZAR INVENTARIO
                 // ==========================================
 
-                await inventarioService.ActualizarInventarioAsync(-20, 51);
+                //await inventarioService.ActualizarInventarioAsync(-20, 51);
 
                 // ==========================================
                 // OBTENER CENTROS ACTUALIZADOS

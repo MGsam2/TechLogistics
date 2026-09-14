@@ -1,6 +1,9 @@
 ﻿@using Microsoft.AspNetCore.Components.Authorization
+
 @using TechLogistics.Client.Layout
+
 @using TechLogistics.Client.Services
+
 @using TechLogistics.Client.Pages
 
 <CascadingAuthenticationState>
@@ -36,6 +39,10 @@
     private JwtAuthenticationStateProvider AuthProvider
         { get; set; } = default!;
 
+    [Inject]
+    private ConectividadService Conectividad
+        { get; set; } = default!;
+
     protected override async Task OnAfterRenderAsync(
         bool firstRender)
     {
@@ -45,5 +52,7 @@
         }
 
         await AuthProvider.InicializarAsync();
+
+        await Conectividad.IniciarAsync();
     }
 }

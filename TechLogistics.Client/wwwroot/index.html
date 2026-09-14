@@ -28,7 +28,18 @@
         <a href="." class="reload">Reload</a>
         <span class="dismiss">🗙</span>
     </div>
+    <script src="js/conectividad.js"></script>
     <script src="_framework/blazor.webassembly#[.{fingerprint}].js"></script>
+
+    <script>
+    if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+            navigator.serviceWorker.register(
+                "service-worker.js"
+            );
+        });
+    }
+</script>
 </body>
 
 </html>
