@@ -115,10 +115,29 @@ builder.Services.AddRazorComponents()
 // BASE DE DATOS
 // ============================================================
 
-builder.Services.AddDbContext<TechLogisticsDbContext>(options =>
+/*builder.Services.AddDbContext<TechLogisticsDbContext>(options =>
     options.UseNpgsql(
         builder.Configuration.GetConnectionString(
-            "TechLogisticsDb")));
+            "TechLogisticsDb")));*/
+            if (builder.Environment.IsEnvironment("Testing"))
+{
+    builder.Services.AddDbContext<TechLogisticsDbContext>(
+        options =>
+        {
+            options.UseInMemoryDatabase(
+                "TechLogisticsIntegrationTests");
+        });
+}
+else
+{
+    builder.Services.AddDbContext<TechLogisticsDbContext>(
+        options =>
+        {
+            options.UseNpgsql(
+                builder.Configuration.GetConnectionString(
+                    "TechLogisticsDb"));
+        });
+}
 
 // ============================================================
 // CONSTRUIR APLICACIÓN
@@ -137,14 +156,24 @@ app.UseGrpcWeb();
 // CONFIGURACIÓN DEL PIPELINE
 // ============================================================
 
-if (!app.Environment.IsDevelopment())
+
+if (app.Environment.IsEnvironment("Testing"))
+{
+    app.UseDeveloperExceptionPage();
+}
+else if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Error", createScopeForErrors: true);
+    app.UseHsts();
+}
+/*if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler(
         "/Error",
         createScopeForErrors: true);
 
     app.UseHsts();
-}
+}*/
 
 // ============================================================
 // MANEJO DE ERRORES PARA RUTAS NO API
@@ -208,6 +237,14 @@ app.MapRazorComponents<App>()
     .AddAdditionalAssemblies(
         typeof(TechLogistics.Client._Imports).Assembly);
 
-await DbInitializer.InicializarAsync(app.Services);
+
+    if (!app.Environment.IsEnvironment("Testing"))
+{
+    await DbInitializer.InicializarAsync(app.Services);
+}
 
 app.Run();
+
+//await DbInitializer.InicializarAsync(app.Services);
+
+//app.Run();

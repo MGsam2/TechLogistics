@@ -10,8 +10,16 @@ builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 builder.Services.AddScoped<JwtAuthorizationMessageHandler>();
 builder.Services.AddScoped<InventarioHistorialApiService>();
+
 builder.Services.AddScoped<OfflineStorageService>();
+
+builder.Services.AddScoped<IOfflineStorageService>(
+    sp => sp.GetRequiredService<OfflineStorageService>());
+
 builder.Services.AddScoped<OfflineSyncService>();
+
+/*builder.Services.AddScoped<OfflineStorageService>();
+builder.Services.AddScoped<OfflineSyncService>();*/
 builder.Services.AddScoped<ConectividadService>();
 
 builder.Services.AddScoped(sp =>

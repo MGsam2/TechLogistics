@@ -1,0 +1,38 @@
+@page "/render-mode-test"
+
+@rendermode InteractiveWebAssembly
+
+<PageTitle>Prueba WebAssembly | TechLogistics</PageTitle>
+
+<div class="container mt-4">
+
+    <h1>Interactive WebAssembly</h1>
+
+    <p>
+        Este componente se está ejecutando mediante
+        <strong>Interactive WebAssembly</strong>.
+    </p>
+
+    <div class="alert alert-success">
+        Render Mode: <strong>InteractiveWebAssembly</strong>
+    </div>
+
+    <button class="btn btn-primary"
+            @onclick="Incrementar">
+        Incrementar contador
+    </button>
+
+    <p class="mt-3">
+        Contador: <strong>@contador</strong>
+    </p>
+
+</div>
+
+@code {
+    private int contador;
+
+    private void Incrementar()
+    {
+        contador++;
+    }
+}

@@ -706,10 +706,35 @@ private async Task CargarDatos()
         cargando = true;
         error = null;
 
-        var datos =
-            await InventarioService.ObtenerInventarioAsync();
+        try
+        {
+            var datos =
+                await InventarioService.ObtenerInventarioAsync();
 
-        inventarios = datos;
+            inventarios = datos;
+
+            await OfflineStorage
+                .GuardarInventarioCacheAsync(inventarios);
+        }
+        catch (HttpRequestException)
+        {
+            inventarios =
+                await OfflineStorage
+                    .ObtenerInventarioCacheAsync();
+
+            if (inventarios.Count > 0)
+            {
+                mensaje =
+                    "Sin conexión. Mostrando los últimos datos " +
+                    "disponibles almacenados localmente.";
+            }
+            else
+            {
+                error =
+                    "No hay conexión y todavía no existen datos " +
+                    "de inventario almacenados localmente.";
+            }
+        }
 
         await InvokeAsync(StateHasChanged);
     }
@@ -724,34 +749,69 @@ private async Task CargarDatos()
     }
 }
 
-    private async Task NuevoInventario()
+private async Task NuevoInventario()
+{
+    try
     {
+        LimpiarMensaje();
+
         try
         {
-            LimpiarMensaje();
-
             productos =
                 await InventarioService.ObtenerProductosAsync();
 
             centros =
                 await InventarioService.ObtenerCentrosAsync();
 
-            inventarioFormulario = new InventarioProducto
+            await OfflineStorage
+                .GuardarProductosCacheAsync(productos);
+
+            await OfflineStorage
+                .GuardarCentrosCacheAsync(centros);
+        }
+        catch (HttpRequestException)
+        {
+            productos =
+                await OfflineStorage
+                    .ObtenerProductosCacheAsync();
+
+            centros =
+                await OfflineStorage
+                    .ObtenerCentrosCacheAsync();
+
+            if (productos.Count == 0 ||
+                centros.Count == 0)
+            {
+                error =
+                    "No hay conexión y todavía no existen " +
+                    "productos o centros almacenados localmente.";
+
+                return;
+            }
+
+            mensaje =
+                "Sin conexión. Utilizando productos y centros " +
+                "almacenados localmente.";
+        }
+
+        inventarioFormulario =
+            new InventarioProducto
             {
                 ProductoId = 0,
                 CentroDistribucionId = 0,
                 Stock = 0
             };
 
-            editando = false;
-            mostrarFormulario = true;
-        }
-        catch (Exception ex)
-        {
-            error =
-                $"No fue posible cargar los datos para crear el inventario: {ex.Message}";
-        }
+        editando = false;
+        mostrarFormulario = true;
     }
+    catch (Exception ex)
+    {
+        error =
+            $"No fue posible cargar los datos para crear " +
+            $"el inventario: {ex.Message}";
+    }
+}
 
 
 private async Task EditarInventario(
@@ -761,19 +821,53 @@ private async Task EditarInventario(
     {
         LimpiarMensaje();
 
-        productos =
-            await InventarioService.ObtenerProductosAsync();
-
-        centros =
-            await InventarioService.ObtenerCentrosAsync();
-
-        inventarioFormulario = new InventarioProducto
+        try
         {
-            Id = inventario.Id,
-            ProductoId = inventario.ProductoId,
-            CentroDistribucionId = inventario.CentroDistribucionId,
-            Stock = inventario.Stock
-        };
+            productos =
+                await InventarioService.ObtenerProductosAsync();
+
+            centros =
+                await InventarioService.ObtenerCentrosAsync();
+
+            await OfflineStorage
+                .GuardarProductosCacheAsync(productos);
+
+            await OfflineStorage
+                .GuardarCentrosCacheAsync(centros);
+        }
+        catch (HttpRequestException)
+        {
+            productos =
+                await OfflineStorage
+                    .ObtenerProductosCacheAsync();
+
+            centros =
+                await OfflineStorage
+                    .ObtenerCentrosCacheAsync();
+
+            if (productos.Count == 0 ||
+                centros.Count == 0)
+            {
+                error =
+                    "No hay conexión y todavía no existen " +
+                    "productos o centros almacenados localmente.";
+
+                return;
+            }
+
+            mensaje =
+                "Sin conexión. Utilizando datos almacenados localmente.";
+        }
+
+        inventarioFormulario =
+            new InventarioProducto
+            {
+                Id = inventario.Id,
+                ProductoId = inventario.ProductoId,
+                CentroDistribucionId =
+                    inventario.CentroDistribucionId,
+                Stock = inventario.Stock
+            };
 
         editando = true;
         mostrarFormulario = true;
@@ -781,7 +875,8 @@ private async Task EditarInventario(
     catch (Exception ex)
     {
         error =
-            $"No fue posible cargar los datos para editar el inventario: {ex.Message}";
+            $"No fue posible cargar los datos para editar " +
+            $"el inventario: {ex.Message}";
     }
 }
 
@@ -958,17 +1053,20 @@ private async Task EditarInventario(
     }
 
 
-    private async Task ConfirmarEliminar()
+private async Task ConfirmarEliminar()
+{
+    if (inventarioAEliminar is null)
     {
-        if (inventarioAEliminar is null)
-        {
-            return;
-        }
+        return;
+    }
+
+    try
+    {
+        var id =
+            inventarioAEliminar.Id;
 
         try
         {
-            var id = inventarioAEliminar.Id;
-
             var eliminado =
                 await InventarioService.EliminarAsync(id);
 
@@ -988,12 +1086,38 @@ private async Task EditarInventario(
                     "No fue posible eliminar el inventario.";
             }
         }
-        catch (Exception ex)
+        catch (HttpRequestException)
         {
-            error =
-                $"Error al eliminar el inventario: {ex.Message}";
+            await OfflineStorage
+                .GuardarOperacionAsync(
+                    new OperacionOffline
+                    {
+                        InventarioId = id,
+                        ProductoId =
+                            inventarioAEliminar.ProductoId,
+                        CentroDistribucionId =
+                            inventarioAEliminar.CentroDistribucionId,
+                        Stock =
+                            inventarioAEliminar.Stock,
+                        TipoOperacion =
+                            "ELIMINACION"
+                    });
+
+            mensaje =
+                "Sin conexión. La eliminación quedó guardada " +
+                "localmente y será sincronizada al recuperar " +
+                "la conexión.";
+
+            mostrarConfirmacion = false;
+            inventarioAEliminar = null;
         }
     }
+    catch (Exception ex)
+    {
+        error =
+            $"Error al eliminar el inventario: {ex.Message}";
+    }
+}
 
 
     private void LimpiarMensaje()

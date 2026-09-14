@@ -21,6 +21,7 @@
       </PrivateAssets>
 
     </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.11" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
     <!-- gRPC -->
     <PackageReference Include="Grpc.AspNetCore" Version="2.76.0" />

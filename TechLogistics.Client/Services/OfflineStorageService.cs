@@ -4,10 +4,19 @@ using TechLogistics.Client.Models;
 
 namespace TechLogistics.Client.Services;
 
-public class OfflineStorageService
+public class OfflineStorageService : IOfflineStorageService
 {
     private const string StorageKey =
         "techlogistics_operaciones_offline";
+
+    private const string InventarioCacheKey =
+        "techlogistics_cache_inventario";
+
+    private const string ProductosCacheKey =
+        "techlogistics_cache_productos";
+
+    private const string CentrosCacheKey =
+        "techlogistics_cache_centros";
 
     private readonly IJSRuntime jsRuntime;
 
@@ -16,6 +25,10 @@ public class OfflineStorageService
     {
         this.jsRuntime = jsRuntime;
     }
+
+    // =========================================================
+    // OPERACIONES OFFLINE
+    // =========================================================
 
     public async Task<List<OperacionOffline>>
         ObtenerOperacionesAsync()
@@ -76,5 +89,101 @@ public class OfflineStorageService
             "localStorage.setItem",
             StorageKey,
             json);
+    }
+
+    // =========================================================
+    // CACHÉ OFFLINE DE INVENTARIO
+    // =========================================================
+
+    public async Task GuardarInventarioCacheAsync(
+        List<InventarioProducto> inventarios)
+    {
+        await GuardarCacheAsync(
+            InventarioCacheKey,
+            inventarios);
+    }
+
+    public async Task<List<InventarioProducto>>
+        ObtenerInventarioCacheAsync()
+    {
+        return await ObtenerCacheAsync<
+            List<InventarioProducto>>(
+                InventarioCacheKey)
+            ?? new List<InventarioProducto>();
+    }
+
+    // =========================================================
+    // CACHÉ OFFLINE DE PRODUCTOS
+    // =========================================================
+
+    public async Task GuardarProductosCacheAsync(
+        List<Producto> productos)
+    {
+        await GuardarCacheAsync(
+            ProductosCacheKey,
+            productos);
+    }
+
+    public async Task<List<Producto>>
+        ObtenerProductosCacheAsync()
+    {
+        return await ObtenerCacheAsync<
+            List<Producto>>(
+                ProductosCacheKey)
+            ?? new List<Producto>();
+    }
+
+    // =========================================================
+    // CACHÉ OFFLINE DE CENTROS
+    // =========================================================
+
+    public async Task GuardarCentrosCacheAsync(
+        List<CentroDistribucion> centros)
+    {
+        await GuardarCacheAsync(
+            CentrosCacheKey,
+            centros);
+    }
+
+    public async Task<List<CentroDistribucion>>
+        ObtenerCentrosCacheAsync()
+    {
+        return await ObtenerCacheAsync<
+            List<CentroDistribucion>>(
+                CentrosCacheKey)
+            ?? new List<CentroDistribucion>();
+    }
+
+    // =========================================================
+    // MÉTODOS GENERALES DE CACHÉ
+    // =========================================================
+
+    private async Task GuardarCacheAsync<T>(
+        string key,
+        T datos)
+    {
+        var json =
+            JsonSerializer.Serialize(datos);
+
+        await jsRuntime.InvokeVoidAsync(
+            "localStorage.setItem",
+            key,
+            json);
+    }
+
+    private async Task<T?> ObtenerCacheAsync<T>(
+        string key)
+    {
+        var json =
+            await jsRuntime.InvokeAsync<string?>(
+                "localStorage.getItem",
+                key);
+
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return default;
+        }
+
+        return JsonSerializer.Deserialize<T>(json);
     }
 }
