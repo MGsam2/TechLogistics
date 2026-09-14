@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -82,7 +83,9 @@ builder.Services.AddHostedService<InventarioSimulatorService>();
 builder.Services.AddScoped<InventarioService>();
 builder.Services.AddSingleton<InventarioNotifier>();
 builder.Services.AddScoped<InventarioState>();
+builder.Services.AddScoped<ProtectedLocalStorage>();
 builder.Services.AddScoped<PreferenciasUsuarioService>();
+
 
 // ============================================================
 // SERVICIOS DE AUTENTICACIÓN
