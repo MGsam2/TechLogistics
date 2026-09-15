@@ -1,75 +1,240 @@
 ==================================================
 TECHLOGISTICS S.A.
 REGISTRO DE AVANCE DEL PROYECTO
-==================================================
+===============================
 
 SEMANA 1
 Fecha: 18/08/2026
 
-[Inicialización del proyecto]
+[Arquitectura de componentes y Render Modes]
 
-- Instalación y verificación de .NET 10 SDK.
-- Instalación y configuración de Visual Studio Code.
-- Instalación y verificación de Git.
-- Creación de la solución Blazor Web App.
-- Configuración inicial del proyecto TechLogistics.
-- Verificación de compilación y ejecución.
-- Aplicación ejecutada correctamente en entorno local.
-- Inicialización del repositorio Git local.
+* Instalación y verificación de .NET 10 SDK.
+* Instalación y configuración de Visual Studio Code.
+* Instalación y verificación de Git.
+* Creación de la solución Blazor Web App.
+* Configuración inicial del proyecto TechLogistics.
+* Verificación de compilación y ejecución.
+* Aplicación ejecutada correctamente en entorno local.
+* Inicialización del repositorio Git local.
+* Configuración del repositorio GitHub.
+* Implementación inicial del Dashboard.
+* Implementación del modelo CentroDistribucion.
+* Integración inicial de PostgreSQL mediante Entity Framework Core.
+* Implementación de TechLogisticsDbContext.
+* Creación de migraciones iniciales.
+* Implementación del servicio de inventario.
+* Implementación del simulador de actualización automática.
+* Implementación de actualización automática del inventario.
+* Implementación de notificaciones de actualización.
+* Implementación de componentes UI reutilizables.
+* Implementación del componente CentroCard.
+* Implementación de Interactive Server para el monitoreo del inventario.
+* Preparación de la arquitectura para el cliente Blazor WebAssembly.
 
 Estado:
-Proyecto base funcionando correctamente.
+Arquitectura base de la Blazor Web App implementada, con monitoreo interactivo y persistencia inicial funcionando correctamente.
 
 ==================================================
+
 SEMANA 2
-
-- Implementación de modelo CentroDistribucion.
-- Integración de PostgreSQL mediante Entity Framework Core.
-- Implementación de DbContext.
-- Creación de migración inicial.
-- Implementación del servicio de inventario.
-- Implementación del simulador de actualización automática.
-- Implementación de Dashboard interactivo mediante InteractiveServer.
-- Implementación de actualización automática del inventario.
-- Implementación de notificaciones en tiempo real.
-- Implementación de componentes UI reutilizables.
-- Implementación del componente CentroCard.
-- Implementación de arquitectura de servicios desacoplados.
-- Preparación de cliente Blazor WebAssembly.
-
-Estado:
-Arquitectura de monitoreo en tiempo real implementada y funcionando.
-
-==================================================
-
-==================================================
-SEMANA 3
 Fecha: 01/09/2026
 
 [Implementación y mejora de la interfaz administrativa]
 
-- Implementación y funcionamiento de las operaciones CRUD del sistema.
-- Verificación de creación, consulta, actualización y eliminación de registros.
-- Comprobación de persistencia de los datos mediante consultas SELECT en PostgreSQL.
-- Rediseño de la interfaz administrativa del sistema.
-- Implementación de una interfaz minimalista y consistente para los módulos administrativos.
-- Rediseño del Dashboard principal.
-- Implementación de indicadores generales de centros e inventario.
-- Implementación de paneles desplegables para los centros de distribución.
-- Implementación de consulta detallada del inventario por centro.
-- Implementación de visualización de cantidades de productos y existencias.
-- Implementación de estados operativos de los centros de distribución.
-- Implementación de acciones rápidas para acceder a Catálogo, Centros e Inventario.
-- Rediseño de la navegación lateral.
-- Implementación de menú de navegación desplegable.
-- Implementación de barra lateral estática durante el desplazamiento de las páginas.
-- Aplicación de estilos visuales minimalistas con tonos neutros y gris oscuro.
-- Mejora de tarjetas, tablas, formularios, botones, mensajes y ventanas de confirmación.
-- Implementación de animaciones y transiciones visuales para mejorar la experiencia de usuario.
-- Eliminación de duplicaciones visuales entre las diferentes pantallas administrativas.
-- Mejora de la presentación responsive de las vistas.
+* Implementación y funcionamiento de las operaciones CRUD del sistema.
+* Verificación de creación, consulta, actualización y eliminación de registros.
+* Comprobación de persistencia de los datos mediante consultas SELECT en PostgreSQL.
+* Rediseño de la interfaz administrativa del sistema.
+* Implementación de una interfaz minimalista y consistente para los módulos administrativos.
+* Rediseño del Dashboard principal.
+* Implementación de indicadores generales de centros e inventario.
+* Implementación de paneles desplegables para los centros de distribución.
+* Implementación de consulta detallada del inventario por centro.
+* Implementación de visualización de cantidades de productos y existencias.
+* Implementación de estados operativos de los centros de distribución.
+* Implementación de acciones rápidas para acceder a Catálogo, Centros e Inventario.
+* Rediseño de la navegación lateral.
+* Implementación de menú de navegación desplegable.
+* Implementación de barra lateral estática durante el desplazamiento de las páginas.
+* Aplicación de estilos visuales minimalistas.
+* Mejora de tarjetas, tablas, formularios, botones y mensajes.
+* Implementación de animaciones y transiciones visuales.
+* Eliminación de duplicaciones visuales entre pantallas administrativas.
+* Mejora de la presentación responsive.
+* Creación del proyecto TechLogistics.Client.
+* Separación de responsabilidades entre Backend y Frontend.
+* Preparación del cliente Blazor WebAssembly.
 
 Estado:
-Módulos administrativos funcionales y conectados con PostgreSQL, con interfaz renovada y sistema de navegación optimizado.
+Módulos administrativos funcionales y conectados con PostgreSQL, con arquitectura Backend/Frontend separada e interfaz renovada.
 
 ==================================================
+
+SEMANA 3
+
+[Gestión de estado y servicios REST/gRPC]
+
+* Implementación del modelo Producto.
+* Implementación del modelo InventarioProducto.
+* Implementación del modelo InventarioHistorial.
+* Configuración de relaciones entre productos, inventarios y centros de distribución.
+* Implementación de API REST para el catálogo.
+* Implementación de API REST para inventario.
+* Implementación de operaciones CRUD de inventario.
+* Implementación del registro histórico de movimientos.
+* Implementación de consultas del historial de inventario.
+* Implementación de validaciones de productos y centros de distribución.
+* Implementación de validación de stock negativo.
+* Implementación de prevención de registros duplicados.
+* Implementación del State Container.
+* Implementación de InventarioState.
+* Implementación de INotifyPropertyChanged.
+* Implementación de sincronización de estado entre componentes.
+* Implementación de Protected Browser Storage.
+* Implementación de PreferenciasUsuarioService.
+* Implementación de persistencia de preferencias del usuario.
+* Implementación del archivo telemetria.proto.
+* Implementación del servicio de telemetría mediante gRPC.
+* Implementación de streaming de actualizaciones de inventario.
+* Configuración de gRPC Web.
+* Implementación de servicios de notificación de cambios de inventario.
+
+Estado:
+Gestión de estado, persistencia local, API REST y comunicación gRPC implementadas.
+
+==================================================
+
+SEMANA 4
+
+[Autenticación, autorización y operación offline]
+
+* Implementación de autenticación mediante JWT.
+* Implementación del servicio JwtService.
+* Configuración de validación de tokens.
+* Implementación de los modelos Usuario y Rol.
+* Implementación del rol GerenteBodega.
+* Implementación del rol AgenteCampo.
+* Implementación de autorización basada en roles.
+* Protección de endpoints mediante autorización.
+* Implementación de control de acceso mediante AuthorizeView.
+* Configuración de servicios del cliente mediante inyección de dependencias.
+* Implementación de OperacionOffline.
+* Implementación de OfflineStorageService.
+* Implementación de IOfflineStorageService.
+* Implementación de almacenamiento local mediante localStorage.
+* Implementación de caché local de inventario.
+* Implementación de caché local de productos.
+* Implementación de caché local de centros.
+* Implementación de OfflineSyncService.
+* Implementación de sincronización de operaciones pendientes.
+* Implementación de sincronización de creación, actualización y eliminación.
+* Conservación de operaciones cuando ocurre un error de API o conexión.
+* Aplicación de Dependency Inversion mediante IOfflineStorageService.
+* Configuración del Service Worker para escenarios offline.
+* Validación de operación offline y posterior sincronización.
+* Verificación de persistencia de las operaciones sincronizadas en PostgreSQL.
+* Configuración de Interactive WebAssembly.
+* Implementación de página de prueba de Interactive WebAssembly.
+* Verificación de interacción y eventos ejecutados en WebAssembly.
+
+Estado:
+Autenticación, autorización, operación offline, sincronización y Interactive WebAssembly implementados y funcionando correctamente.
+
+==================================================
+
+SEMANA 5
+
+[Pruebas unitarias, integración y calidad]
+
+* Creación del proyecto TechLogistics.Tests.
+* Integración del proyecto de pruebas con la solución.
+* Configuración de xUnit.
+* Configuración de Entity Framework Core InMemory para escenarios de prueba.
+* Implementación de pruebas unitarias para controladores.
+* Implementación de pruebas para operaciones CRUD de inventario.
+* Implementación de pruebas para validaciones de inventario.
+* Implementación de pruebas para historial de movimientos.
+* Implementación de pruebas para servicios.
+* Implementación de pruebas específicas para OfflineSyncService.
+* Implementación de pruebas para creación offline.
+* Implementación de pruebas para actualización offline.
+* Implementación de pruebas para eliminación offline.
+* Implementación de pruebas para respuestas fallidas.
+* Implementación de pruebas para errores de conexión.
+* Implementación de pruebas para operaciones pendientes.
+* Configuración de bUnit.
+* Implementación de pruebas de componentes Blazor.
+* Validación de estados visuales de componentes.
+* Validación de eventos y callbacks de componentes.
+* Configuración de pruebas de integración mediante WebApplicationFactory.
+* Implementación de pruebas de endpoints HTTP.
+* Configuración de autenticación para escenarios de integración.
+* Corrección de errores encontrados durante las pruebas.
+* Aplicación de principios SOLID en servicios y dependencias.
+* Validación final de la compilación.
+* Ejecución final de las pruebas automatizadas.
+* Resultado final: 63 pruebas ejecutadas.
+* Resultado final: 63 pruebas correctas.
+* Resultado final: 0 pruebas con errores.
+* Resultado final: 0 pruebas omitidas.
+* Generación del archivo coverage.cobertura.xml.
+* Generación del reporte de cobertura.
+* Cobertura final de líneas: 17.8%.
+* Cobertura final de ramas: 11.7%.
+* Verificación del funcionamiento de las funcionalidades críticas mediante pruebas unitarias, bUnit e integración.
+
+Estado:
+Etapa de pruebas y calidad completada con 100% de aprobación de las pruebas ejecutadas.
+
+==================================================
+
+# ESTADO FINAL DEL PROYECTO
+
+El proyecto TechLogistics S.A. cuenta con:
+
+* Blazor Web App.
+* Interactive Server.
+* Interactive WebAssembly.
+* Arquitectura separada Backend/Frontend.
+* Componentes reutilizables.
+* PostgreSQL.
+* Entity Framework Core.
+* API REST.
+* Gestión de catálogo.
+* Gestión CRUD de inventario.
+* Historial de movimientos.
+* State Container.
+* INotifyPropertyChanged.
+* Protected Browser Storage.
+* Operación offline.
+* Sincronización de operaciones offline.
+* Caché local.
+* gRPC.
+* Streaming de actualizaciones.
+* Autenticación JWT.
+* Autorización basada en roles.
+* Roles GerenteBodega y AgenteCampo.
+* Pruebas xUnit.
+* Pruebas bUnit.
+* Pruebas de integración.
+* Aplicación de principios SOLID.
+
+Resultado final de pruebas:
+
+Total: 63
+Correctas: 63
+Errores: 0
+Omitidas: 0
+
+Cobertura:
+
+Line coverage: 17.8%
+Branch coverage: 11.7%
+
+La cobertura global se encuentra afectada por código generado automáticamente por Razor, Protobuf/gRPC y otros componentes que no representan directamente lógica de negocio desarrollada manualmente.
+
+El proyecto queda preparado para el registro de la documentación técnica.
+
+==================================================
+FIN DEL REGISTRO
+================
